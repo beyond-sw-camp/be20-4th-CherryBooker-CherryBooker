@@ -1,5 +1,7 @@
 package com.cherry.cherrybookerbe.report.domain;
 
+import com.cherry.cherrybookerbe.community.domain.entity.CommunityThread;
+import com.cherry.cherrybookerbe.user.command.domain.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,7 +23,7 @@ public class Report extends BaseTimeEntity {
     // 신고 대상 스레드
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "threads_id", nullable = false)
-    private Threads threads;
+    private CommunityThread threads;
 
     //신고 상태
     @Enumerated(EnumType.STRING)
@@ -29,7 +31,7 @@ public class Report extends BaseTimeEntity {
     private ReportStatus status;
 
     @Builder
-    public Report(User user, Threads threads, ReportStatus status) {
+    public Report(User user, CommunityThread threads, ReportStatus status) {
         this.user = user;
         this.threads = threads;
         this.status = status;
