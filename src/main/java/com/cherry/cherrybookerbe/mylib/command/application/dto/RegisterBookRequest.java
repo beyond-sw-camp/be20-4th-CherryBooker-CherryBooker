@@ -1,9 +1,11 @@
 package com.cherry.cherrybookerbe.mylib.command.application.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public record RegisterBookRequest(
-        Long userId,
-        String keyword,
+        @NotNull Long userId,
+        @NotBlank String keyword,
         String isbnHint
 ) {
 }
