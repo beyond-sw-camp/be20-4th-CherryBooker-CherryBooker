@@ -7,14 +7,15 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "quote")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Entity
+@Table(name = "quote")
 public class Quote extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "quote_id")
     private Long quoteId;
 
     @Column(nullable = false)
@@ -39,8 +40,14 @@ public class Quote extends BaseTimeEntity {
     private Status status = Status.Y;
 
     @Builder
-    private Quote(Long userId, Long userBookId, String content,
-                  String bookTitle, String author, String imagePath, String comment) {
+    private Quote(Long userId,
+                  Long userBookId,
+                  String content,
+                  String bookTitle,
+                  String author,
+                  String imagePath,
+                  String comment) {
+
         this.userId = userId;
         this.userBookId = userBookId;
         this.content = content;
@@ -48,5 +55,25 @@ public class Quote extends BaseTimeEntity {
         this.author = author;
         this.imagePath = imagePath;
         this.comment = comment;
+    }
+
+    // 글귀 내용 수정
+    public void updateContent(String newContent) {
+        this.content = newContent;
+    }
+
+    // 코멘트 수정
+    public void updateComment(String newComment) {
+        this.comment = newComment;
+    }
+
+    // 코멘트 삭제
+    public void removeComment() {
+        this.comment = null;
+    }
+
+    // 소프트 삭제
+    public void delete() {
+        this.status = Status.N;
     }
 }

@@ -1,5 +1,6 @@
 package com.cherry.cherrybookerbe.quote.query.service;
 
+import com.cherry.cherrybookerbe.common.enums.Status;
 import com.cherry.cherrybookerbe.quote.command.entity.Quote;
 import com.cherry.cherrybookerbe.quote.query.dto.QuoteDetailResponse;
 import com.cherry.cherrybookerbe.quote.query.dto.QuoteListResponse;
@@ -36,14 +37,14 @@ public class QuoteQueryService {
 
     // 내 글귀 전체 조회
     public List<QuoteListResponse> getQuotesByUser(Long userId) {
-        return repository.findByUserIdAndIsDeletedFalse(userId).stream()
+        return repository.findByUserIdAndStatus(userId, Status.Y).stream()
                 .map(QuoteListResponse::from)
                 .collect(Collectors.toList());
     }
 
     // 내 글귀 페이징 조회 (무한스크롤)
     public Page<QuoteListResponse> getQuotesByUserPaged(Long userId, Pageable pageable) {
-        return repository.findByUserIdAndIsDeletedFalse(userId, pageable)
+        return repository.findByUserIdAndStatus(userId, Status.Y, pageable)
                 .map(QuoteListResponse::from);
     }
 }

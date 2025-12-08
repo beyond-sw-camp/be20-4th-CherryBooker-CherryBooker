@@ -22,18 +22,19 @@ public class QuoteCommandService {
                 .bookTitle(request.getBookTitle())
                 .author(request.getAuthor())
                 .imagePath(request.getImagePath())
-                .comment(request.getComment()) // 글귀 등록시 코멘트 등록
+                .comment(request.getComment())
                 .build();
 
         repository.save(quote);
         return quote.getQuoteId();
     }
 
-    // 구절 삭제
+    // 구절 삭제 (soft delete)
     public void deleteQuote(Long quoteId) {
         Quote quote = repository.findById(quoteId)
                 .orElseThrow(() -> new RuntimeException("Quote not found"));
-        quote.setIsDeleted(true);
+
+        quote.delete();  // 도메인 메서드
     }
 
     // 코멘트 수정
@@ -41,7 +42,7 @@ public class QuoteCommandService {
         Quote quote = repository.findById(quoteId)
                 .orElseThrow(() -> new RuntimeException("Quote not found"));
 
-        quote.setComment(comment);
+        quote.updateComment(comment); // 도메인 메서드
     }
 
     // 코멘트 삭제
@@ -49,9 +50,6 @@ public class QuoteCommandService {
         Quote quote = repository.findById(quoteId)
                 .orElseThrow(() -> new RuntimeException("Quote not found"));
 
-        quote.setComment(null);
+        quote.removeComment(); // 도메인 메서드
     }
-
-
-
 }
