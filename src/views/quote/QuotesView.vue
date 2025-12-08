@@ -62,7 +62,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import QuoteCreateModal from "@/components/QuoteCreateModal.vue";
+import QuoteCreateModal from "@/components/quote/QuoteCreateModal.vue";
 
 const router = useRouter();
 

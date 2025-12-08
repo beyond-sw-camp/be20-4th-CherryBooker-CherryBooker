@@ -9,7 +9,7 @@
 
       <!-- 도서 선택 -->
       <div class="section">
-        <label class="label">도서 선택</label>
+        <label class="label">📚 도서 선택</label>
 
         <div class="dropdown">
           <select v-model="selectedBookId" class="select-box">
@@ -23,7 +23,7 @@
 
       <!-- 이미지 업로드 -->
       <div class="section">
-        <label class="label">글귀 이미지 업로드</label>
+        <label class="label">📸 글귀 이미지 업로드</label>
 
         <div class="upload-wrapper">
           <input type="file" @change="handleImageUpload" accept="image/*">
@@ -37,7 +37,7 @@
 
       <!-- OCR 텍스트 결과 OR 직접 입력 -->
       <div class="section">
-        <label class="label">글귀 내용</label>
+        <label class="label">📃 글귀 내용</label>
         <textarea
             class="textarea"
             v-model="content"
@@ -87,7 +87,7 @@ const submitLoading = ref(false);
 // 모달 닫기
 const closeModal = () => emit("close");
 
-// 📌 1) 내 서재 목록 불러오기
+// 1) 내 서재 목록 불러오기
 const loadUserBooks = async () => {
   try {
     const res = await axios.get("/api/user-books");
@@ -97,7 +97,7 @@ const loadUserBooks = async () => {
   }
 };
 
-// 📌 2) 이미지 업로드 + 미리보기 처리
+// 2) 이미지 업로드 + 미리보기 처리
 const handleImageUpload = (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -111,7 +111,7 @@ const handleImageUpload = (e) => {
   reader.readAsDataURL(file);
 };
 
-// 📌 3) OCR 요청 (FastAPI 또는 PaddleOCR 서버)
+// 3) OCR 요청 (FastAPI 또는 PaddleOCR 서버)
 const requestOCR = async () => {
   if (!imageFile.value) return alert("이미지를 먼저 업로드하세요.");
 
@@ -130,7 +130,7 @@ const requestOCR = async () => {
   }
 };
 
-// 📌 4) 글귀 등록 API
+// 4) 글귀 등록 API
 const submitQuote = async () => {
   if (!selectedBookId.value) return alert("도서를 선택해주세요.");
   if (!content.value.trim()) return alert("글귀 내용을 입력해주세요.");
@@ -208,6 +208,7 @@ onMounted(() => {
 /* 섹션 */
 .section {
   margin-top: 18px;
+  text-align: left;
 }
 
 .label {
