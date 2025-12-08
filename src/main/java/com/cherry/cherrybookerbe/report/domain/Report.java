@@ -1,18 +1,13 @@
 package com.cherry.cherrybookerbe.report.domain;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
+import lombok.*;
 
 @Entity
 @Table(name = "report")
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
-public class Report {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Report extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "report_id")
@@ -26,21 +21,28 @@ public class Report {
     // 신고 대상 스레드
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "threads_id", nullable = false)
-    private Threads threads; // JPA 연관관계 규칙에 따라 단수형 엔티티로 매핑하는 것을 권장.
+    private Threads threads;
 
     //신고 상태
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private ReportStatus status;
 
-    //신고 시간
-    //@CreationTimestamp ; jpa 상에서 자동생성할 경우.
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @Builder
+    public Report(User user, Threads threads, ReportStatus status) {
+        this.user = user;
+        this.threads = threads;
+        this.status = status;
 
-    // 게시물 삭제 여부
-    @Column(name = "is_deleted", nullable = false)
-    private boolean isDeleted;
-    // private boolean isDeleted = false;
+    }
+
+    // 신고 승인 처리
+    public void approve() {
+        this.status = ReportStatus.VALID;
+    }
+    // 신고 반려 처리
+    public void reject() {
+        this.status = ReportStatus.REJECTED;
+    }
 
 }
