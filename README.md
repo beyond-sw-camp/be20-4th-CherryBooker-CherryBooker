@@ -6,6 +6,7 @@
 ### 1. 프로젝트 클론
 **cmd에
 git clone https://github.com/be20-4th-CherryBooker-CherryBooker/EasyOCR-fastapi-service.git
+
 cd EasyOCR-fastapi-service
 
 ### 2.docker 이미지 빌드(시간이 매우 오래 걸립니다.)
