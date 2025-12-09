@@ -39,4 +39,26 @@ public class QuoteQueryService {
         return repository.findByUserIdAndStatus(userId, Status.Y, pageable)
                 .map(QuoteListResponse::from);
     }
+
+    // 책 제목으로 검색
+    public Page<QuoteListResponse> getQuotesByUserPaged(Long userId, String keyword, Pageable pageable) {
+
+        Status status = Status.Y;
+
+        Page<Quote> result;
+
+        if (keyword == null || keyword.isBlank()) {
+            result = repository.findByUserIdAndStatus(userId, status, pageable);
+        } else {
+            result = repository.findByUserIdAndStatusAndBookTitleContaining(
+                    userId,
+                    status,
+                    keyword,
+                    pageable
+            );
+        }
+
+        return result.map(QuoteListResponse::from);
+    }
+
 }

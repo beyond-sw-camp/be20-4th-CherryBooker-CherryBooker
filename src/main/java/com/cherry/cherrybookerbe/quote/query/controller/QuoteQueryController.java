@@ -7,10 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
@@ -40,13 +37,16 @@ public class QuoteQueryController {
         return ResponseEntity.ok(quoteQueryService.getQuotesByUser(userId));
     }
 
-    // 내 글귀 페이징 조회 (무한스크롤)
+    // 내 글귀 페이징 조회 (검색 + 무한스크롤)
     @GetMapping("/my")
     public ResponseEntity<Page<QuoteListResponse>> getMyQuotesPaged(
             @AuthenticationPrincipal OAuth2User user,
-            @PageableDefault(size = 12) Pageable pageable
+            @PageableDefault(size = 12) Pageable pageable,
+            @RequestParam(required = false) String keyword
     ) {
         Long userId = Long.valueOf(user.getAttribute("userId"));
-        return ResponseEntity.ok(quoteQueryService.getQuotesByUserPaged(userId, pageable));
+        return ResponseEntity.ok(
+                quoteQueryService.getQuotesByUserPaged(userId, keyword, pageable)
+        );
     }
 }
