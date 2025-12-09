@@ -7,6 +7,18 @@ const routes = [
         component: () => import("../views/home/HomeView.vue")
     },
     {
+        path: "/login",
+        name: "login",
+        component: () => import("../views/login/LoginView.vue"),
+        meta: { hideNav: true } // nav 숨기기
+    },
+    {
+        path: "/admin/login",
+        name: "adminLogin",
+        component: () => import("../views/login/AdminLoginView.vue"),
+        meta: { hideNav: true } // nav 숨기기
+    },
+    {
         path: "/mypage",
         name: "mypage",
         component: () => import("../views/mypage/MyPageView.vue")
