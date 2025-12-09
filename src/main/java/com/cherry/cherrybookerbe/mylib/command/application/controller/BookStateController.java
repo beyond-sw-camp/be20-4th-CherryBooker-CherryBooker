@@ -1,9 +1,9 @@
 package com.cherry.cherrybookerbe.mylib.command.application.controller;
 
-import com.cherry.cherrybookerbe.mylib.command.application.dto.BookStatusChangeRequest;
-import com.cherry.cherrybookerbe.mylib.command.application.dto.BookStatusChangeResponse;
-import com.cherry.cherrybookerbe.mylib.command.application.dto.RegisterBookRequest;
-import com.cherry.cherrybookerbe.mylib.command.application.dto.RegisterBookResponse;
+import com.cherry.cherrybookerbe.mylib.command.application.dto.request.BookStatusChangeRequest;
+import com.cherry.cherrybookerbe.mylib.command.application.dto.response.BookStatusChangeResponse;
+import com.cherry.cherrybookerbe.mylib.command.application.dto.request.RegisterBookRequest;
+import com.cherry.cherrybookerbe.mylib.command.application.dto.response.RegisterBookResponse;
 import com.cherry.cherrybookerbe.mylib.command.application.service.BookStatusService;
 import com.cherry.cherrybookerbe.mylib.command.application.service.RegisterBookService;
 import lombok.RequiredArgsConstructor;

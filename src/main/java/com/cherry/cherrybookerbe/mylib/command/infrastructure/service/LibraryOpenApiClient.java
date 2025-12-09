@@ -4,7 +4,6 @@ import com.cherry.cherrybookerbe.common.exception.BadRequestException;
 import com.cherry.cherrybookerbe.common.exception.ExternalApiException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
@@ -18,7 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Service
-public class NationalLibraryOpenApiClient {
+public class LibraryOpenApiClient {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
@@ -26,18 +25,18 @@ public class NationalLibraryOpenApiClient {
     private final String apiKey;
     private final String defaultCoverImage;
 
-    public NationalLibraryOpenApiClient(RestTemplateBuilder restTemplateBuilder,
-                                        ObjectMapper objectMapper,
-                                        @Value("${external.book-api.url:https://www.nl.go.kr/NL/search/openApi/search.do}") String baseUrl,
-                                        @Value("${external.book-api.key:8661828ebf544e1b971df87a9bfae2be365ae16451d530bfb1f666d30021fa27}") String apiKey,
-                                        @Value("${external.book-api.default-cover:https://dummyimage.com/600x800/cfcfcf/333333&text=CherryBooker}") String defaultCoverImage) {
+    public LibraryOpenApiClient(RestTemplateBuilder restTemplateBuilder,
+                                ObjectMapper objectMapper,
+                                @Value("${external.book-api.url:https://ebook.library.kr/api/open-search/ebook}") String baseUrl,
+                                @Value("${external.book-api.ServiceKey:nOf3PUHtiQyc5sOQlImwkRbvzxWHvXXgWp6L76HS0ZEqfqi1N2wK2DuoonoE2O68}") String apiKey,
+                                @Value("${external.book-api.default-cover-image:https://ebook.library.kr/images/no-cover.png}") String defaultCoverImage) {
         this.objectMapper = objectMapper;
         this.baseUrl = baseUrl;
         this.apiKey = apiKey;
         this.defaultCoverImage = defaultCoverImage;
         this.restTemplate = restTemplateBuilder
-                .connectTimeout(Duration.ofSeconds(5))
-                .readTimeout(Duration.ofSeconds(5))
+                .connectTimeout(Duration.ofSeconds(10))
+                .readTimeout(Duration.ofSeconds(10))
                 .build();
     }
 
@@ -46,13 +45,21 @@ public class NationalLibraryOpenApiClient {
             throw new BadRequestException("도서 제목이 필요합니다.");
         }
 
-        URI uri = UriComponentsBuilder.fromHttpUrl(baseUrl)
-                .queryParam("key", apiKey)
-                .queryParam("apiType", "json")
-                .queryParam("pageSize", 1)
-                .queryParam("kwd", keyword.trim())
-                .build(true)
-                .toUri();
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(baseUrl)
+                .queryParam("ServiceKey", apiKey)
+                .queryParam("pageNo", 1)
+                .queryParam("numOfRows", 1)
+                .queryParam("ebookType", "ebook");
+
+        if (StringUtils.hasText(isbnHint)) {
+            builder.queryParam("searchType", "isbn")
+                    .queryParam("searchKeyword", isbnHint.trim());
+        } else {
+            builder.queryParam("searchType", "title")
+                    .queryParam("searchKeyword", keyword.trim());
+        }
+
+        URI uri = builder.build(true).toUri();
 
         String payload;
         try {
@@ -62,10 +69,10 @@ public class NationalLibraryOpenApiClient {
         }
 
         JsonNode docNode = extractDocNode(payload);
-        String title = firstText(docNode, keyword, "titleInfo", "title");
-        String author = firstText(docNode, "미상", "authorInfo", "author");
-        String isbn = firstText(docNode, StringUtils.hasText(isbnHint) ? isbnHint : keyword, "isbn", "isbn13", "isbn10");
-        String coverImageUrl = firstText(docNode, defaultCoverImage, "imageUrl", "cover", "bookImageURL");
+        String title = firstText(docNode, keyword, "titleInfo", "title", "TITLE");
+        String author = firstText(docNode, "미상", "authorInfo", "author", "AUTHOR");
+        String isbn = firstText(docNode, StringUtils.hasText(isbnHint) ? isbnHint : keyword, "isbn", "isbn13", "isbn10", "ISBN");
+        String coverImageUrl = firstText(docNode, defaultCoverImage, "imageUrl", "cover", "bookImageURL", "COVER_URL");
 
         return new BookMetadata(title, author, isbn, coverImageUrl);
     }
@@ -76,7 +83,7 @@ public class NationalLibraryOpenApiClient {
         }
         try {
             JsonNode root = objectMapper.readTree(payload);
-            List<String> candidates = Arrays.asList("/result/docs", "/docs", "/channel/item", "/items", "/item");
+            List<String> candidates = Arrays.asList("/data", "/result/docs", "/docs", "/channel/item", "/items", "/item");
             for (String path : candidates) {
                 JsonNode node = root.at(path);
                 if (node.isArray() && node.size() > 0) {
@@ -103,7 +110,6 @@ public class NationalLibraryOpenApiClient {
         }
         return defaultValue;
     }
-
     public record BookMetadata(
             String title,
             String author,

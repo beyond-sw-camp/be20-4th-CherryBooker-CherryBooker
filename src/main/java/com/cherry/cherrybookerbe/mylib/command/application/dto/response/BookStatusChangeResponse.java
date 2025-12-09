@@ -1,5 +1,6 @@
-package com.cherry.cherrybookerbe.mylib.command.application.dto;
+package com.cherry.cherrybookerbe.mylib.command.application.dto.response;
 
+import com.cherry.cherrybookerbe.mylib.command.application.dto.StatusTrigger;
 import com.cherry.cherrybookerbe.mylib.command.domain.entity.BookStatus;
 import com.cherry.cherrybookerbe.mylib.command.domain.entity.MyLib;
 

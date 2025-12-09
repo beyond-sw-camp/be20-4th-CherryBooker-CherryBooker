@@ -3,7 +3,7 @@ package com.cherry.cherrybookerbe.mylib.command.domain.service;
 import com.cherry.cherrybookerbe.common.exception.BadRequestException;
 import com.cherry.cherrybookerbe.mylib.command.domain.entity.Book;
 import com.cherry.cherrybookerbe.mylib.command.domain.repository.SearchBookRepository;
-import com.cherry.cherrybookerbe.mylib.command.infrastructure.service.NationalLibraryOpenApiClient;
+import com.cherry.cherrybookerbe.mylib.command.infrastructure.service.LibraryOpenApiClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +15,7 @@ import org.springframework.util.StringUtils;
 public class RegisterNewBookService {
 
     private final SearchBookRepository searchBookRepository;
-    private final NationalLibraryOpenApiClient bookApiClient;
+    private final LibraryOpenApiClient bookApiClient;
 
     public Book findOrCreate(String keyword, String isbnHint) {
         if (!StringUtils.hasText(keyword)) {
@@ -32,7 +32,7 @@ public class RegisterNewBookService {
     }
 
     private Book createBookFromApi(String keyword, String isbnHint) {
-        NationalLibraryOpenApiClient.BookMetadata metadata = bookApiClient.search(keyword, isbnHint);
+        LibraryOpenApiClient.BookMetadata metadata = bookApiClient.search(keyword, isbnHint);
         Book book = Book.builder()
                 .title(trim(metadata.title(), 20))
                 .author(trim(metadata.author(), 20))
