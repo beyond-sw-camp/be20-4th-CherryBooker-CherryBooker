@@ -56,6 +56,15 @@
         @created="refreshQuotes"
     />
 
+    <!-- 글귀 자세히보기 모달 -->
+    <QuoteDetailModal
+        v-if="showDetailModal"
+        :quote="selectedQuote"
+        @close="showDetailModal = false"
+        @delete="deleteQuote"
+        @edit="editQuote"
+    />
+
   </div>
 </template>
 
@@ -63,8 +72,11 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import QuoteCreateModal from "@/components/quote/QuoteCreateModal.vue";
+import QuoteDetailModal from "@/components/quote/QuoteDetailModal.vue";
 
 const router = useRouter();
+const showDetailModal = ref(false);
+const selectedQuote = ref(null);
 
 // 모달 상태
 const showCreateModal = ref(false);
@@ -106,8 +118,11 @@ const searchQuotes = () => {
   loadQuotes();
 };
 
-// 상세 이동
-const openDetail = (quote) => router.push(`/quotes/${quote.quoteId}`);
+// 글귀 상세보기 모달
+const openDetail = (quote) => {
+  selectedQuote.value = quote;
+  showDetailModal.value = true;
+};
 
 // 글귀 등록 후 목록 새로고침
 const refreshQuotes = () => {
@@ -115,6 +130,34 @@ const refreshQuotes = () => {
   page.value = 0;
   isLast.value = false;
   loadQuotes();
+};
+
+// 삭제
+const deleteQuote = async (quoteId) => {
+  if (!confirm("정말 삭제하시겠습니까?")) return;
+
+  await fetch(`/api/quotes/${quoteId}`, { method: "DELETE" });
+
+  showDetailModal.value = false;
+  refreshQuotes();
+};
+
+// 수정
+const editQuote = async (quote) => {
+  const newComment = prompt("새로운 코멘트를 입력하세요", quote.comment || "");
+
+  if (newComment === null) return;
+
+  await fetch(`/api/quotes/${quote.quoteId}/comment`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ comment: newComment }),
+  });
+
+  alert("코멘트가 수정되었습니다.");
+
+  showDetailModal.value = false;
+  refreshQuotes();
 };
 
 // IntersectionObserver 등록
