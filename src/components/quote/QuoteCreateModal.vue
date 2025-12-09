@@ -41,13 +41,13 @@
         <textarea
             class="textarea"
             v-model="content"
-            placeholder="OCR 결과 또는 직접 입력하세요."
+            placeholder="추출된 글귀가 입력됩니다."
         ></textarea>
       </div>
 
       <!-- 버튼 영역 -->
       <div class="btn-row">
-        <button class="gray-btn" @click="requestOCR" :disabled="!imageFile">
+        <button class="ocr-btn" @click="requestOCR" :disabled="!imageFile">
           이미지 OCR
         </button>
 
@@ -57,6 +57,12 @@
       </div>
 
     </div>
+
+    <div v-if="isOcrLoading" class="loading-overlay">
+      <img src="/images/loading.gif" class="loading-img" />
+      <p>OCR 추출 중...</p>
+    </div>
+
   </div>
 </template>
 
@@ -84,8 +90,14 @@ const content = ref("");
 // 로딩 상태
 const submitLoading = ref(false);
 
+// OCR 로딩 상태
+const isOcrLoading = ref(false);
+
 // 모달 닫기
-const closeModal = () => emit("close");
+const closeModal = () => {
+  resetForm();
+  emit("close");
+};
 
 // 1) 내 서재 목록 불러오기
 const loadUserBooks = async () => {
@@ -119,14 +131,18 @@ const requestOCR = async () => {
   formData.append("file", imageFile.value);
 
   try {
+    isOcrLoading.value = true;
+
     const res = await axios.post("http://localhost:8000/ocr", formData, {
       headers: { "Content-Type": "multipart/form-data" }
     });
 
-    content.value = res.data.full_text; // OCR로 인식된 글귀
+    content.value = res.data.full_text;
   } catch (e) {
     console.error(e);
     alert("OCR 처리 중 오류 발생");
+  } finally {
+    isOcrLoading.value = false;
   }
 };
 
@@ -172,6 +188,15 @@ const submitQuote = async () => {
     submitLoading.value = false;
   }
 };
+
+// 창 닫으면 리셋
+const resetForm = () => {
+  selectedBookId.value = "";
+  imageFile.value = null;
+  previewImage.value = "";
+  content.value = "";
+};
+
 
 onMounted(() => {
   loadUserBooks();
@@ -254,7 +279,7 @@ onMounted(() => {
 
 .preview-img {
   width: 100%;
-  max-height: 260px;
+  max-height: 200px;
   border-radius: 10px;
   object-fit: cover;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
@@ -289,11 +314,41 @@ onMounted(() => {
   cursor: pointer;
 }
 
-.gray-btn {
+.ocr-btn {
   padding: 8px 18px;
   border-radius: 12px;
   border: none;
-  background: #ddd;
+  background: #ff8d8d;
+  color: white;
+  font-weight: 600;
   cursor: pointer;
 }
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.85);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 18px;
+  z-index: 3000;
+}
+
+.loading-img {
+  width: 80px;
+  height: 80px;
+}
+
+.loading-overlay p {
+  margin-top: 10px;
+  color: #333;
+  font-size: 14px;
+  font-weight: 600;
+}
+
 </style>
