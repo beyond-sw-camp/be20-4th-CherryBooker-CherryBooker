@@ -85,10 +85,10 @@ const login = () => {
 /* CherryBooker 제목 */
 .logo-title {
   font-family: "Angkor", serif;
-  font-size: 46px;
+  font-size: 36px;
   font-weight: 700;
   color: #df3e3e;
-  margin-bottom: 25px;
+  margin-bottom: 10px;
 }
 
 /* 로그인 박스 */

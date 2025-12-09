@@ -4,7 +4,10 @@ import NavigationBar from "@/components/NavigationBar.vue";
 
 <template>
   <div>
-    <NavBar v-if="!$route.meta.hideNav" />
+    <!-- 네비게이션: 로그인 페이지에서는 숨김 -->
+    <NavigationBar v-if="!$route.meta?.hideNav" />
+
+    <!-- 라우터 화면 -->
     <router-view />
   </div>
 </template>
