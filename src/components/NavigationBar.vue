@@ -10,9 +10,9 @@
     </div>
 
     <div class="nav-item"
-         :class="{ active: isActive('/books') }"
-         @click="goTo('/books')">
-      <img src="/images/book.png" alt="book" />
+         :class="{ active: isActive('/mylibrary') }"
+         @click="goTo('/mylibrary')">
+      <img src="/images/book.png" alt="mylibrary" />
     </div>
 
     <!-- 중앙 로고 -->
