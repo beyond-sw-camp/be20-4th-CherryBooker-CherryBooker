@@ -2,8 +2,8 @@ package com.cherry.cherrybookerbe.mylib.command.application.service;
 
 import com.cherry.cherrybookerbe.common.exception.BadRequestException;
 import com.cherry.cherrybookerbe.common.exception.ResourceNotFoundException;
-import com.cherry.cherrybookerbe.mylib.command.application.dto.BookStatusChangeRequest;
-import com.cherry.cherrybookerbe.mylib.command.application.dto.BookStatusChangeResponse;
+import com.cherry.cherrybookerbe.mylib.command.application.dto.request.BookStatusChangeRequest;
+import com.cherry.cherrybookerbe.mylib.command.application.dto.response.BookStatusChangeResponse;
 import com.cherry.cherrybookerbe.mylib.command.application.dto.StatusTrigger;
 import com.cherry.cherrybookerbe.mylib.command.domain.entity.BookStatus;
 import com.cherry.cherrybookerbe.mylib.command.domain.entity.MyLib;

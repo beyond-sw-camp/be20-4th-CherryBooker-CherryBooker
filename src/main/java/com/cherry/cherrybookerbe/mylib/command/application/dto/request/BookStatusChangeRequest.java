@@ -1,5 +1,6 @@
-package com.cherry.cherrybookerbe.mylib.command.application.dto;
+package com.cherry.cherrybookerbe.mylib.command.application.dto.request;
 
+import com.cherry.cherrybookerbe.mylib.command.application.dto.StatusTrigger;
 import com.cherry.cherrybookerbe.mylib.command.domain.entity.BookStatus;
 import jakarta.validation.constraints.NotNull;
 

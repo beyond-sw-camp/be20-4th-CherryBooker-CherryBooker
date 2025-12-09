@@ -1,4 +1,4 @@
-package com.cherry.cherrybookerbe.mylib.command.application.dto;
+package com.cherry.cherrybookerbe.mylib.command.application.dto.request;
 
 
 public record RegisterBookRequest(

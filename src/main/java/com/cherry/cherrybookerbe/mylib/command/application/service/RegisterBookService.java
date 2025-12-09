@@ -1,8 +1,8 @@
 package com.cherry.cherrybookerbe.mylib.command.application.service;
 
 import com.cherry.cherrybookerbe.common.exception.ResourceNotFoundException;
-import com.cherry.cherrybookerbe.mylib.command.application.dto.RegisterBookRequest;
-import com.cherry.cherrybookerbe.mylib.command.application.dto.RegisterBookResponse;
+import com.cherry.cherrybookerbe.mylib.command.application.dto.request.RegisterBookRequest;
+import com.cherry.cherrybookerbe.mylib.command.application.dto.response.RegisterBookResponse;
 import com.cherry.cherrybookerbe.mylib.command.domain.entity.Book;
 import com.cherry.cherrybookerbe.mylib.command.domain.entity.BookStatus;
 import com.cherry.cherrybookerbe.mylib.command.domain.entity.MyLib;
