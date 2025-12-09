@@ -3,6 +3,7 @@ package com.cherry.cherrybookerbe.user.command.controller;
 import com.cherry.cherrybookerbe.common.security.auth.UserPrincipal;
 import com.cherry.cherrybookerbe.user.command.dto.request.UpdateNicknameRequest;
 import com.cherry.cherrybookerbe.user.command.service.UserCommandServiceImpl;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

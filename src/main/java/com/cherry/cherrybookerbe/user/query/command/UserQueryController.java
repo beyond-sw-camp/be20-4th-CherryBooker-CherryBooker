@@ -19,12 +19,8 @@ public class UserQueryController {
     private final UserQueryService userQueryService;
 
 
-    // 전체 유저 조회
-    @GetMapping
-    public PageResponse<UserListResponse> getAllUsers(UserRequest request){
+    // Todo (관리자)전체 유저 조회
 
-        return userQueryService.selectAllUsers(request);
-    }
 
     //마이페이지 조회
     @GetMapping("/me")
