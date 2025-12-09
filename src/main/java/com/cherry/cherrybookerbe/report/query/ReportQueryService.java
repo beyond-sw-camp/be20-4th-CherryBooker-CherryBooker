@@ -44,7 +44,7 @@ public class ReportQueryService {
                 = reportQueryRepository.findPendingReplyIdsReportedOverFive();
 
         for (Long threadId : pendingThreadIds) {
-            CommunityThread thread = threadRepository.findById(pendingThreadIds)
+            CommunityThread thread = threadRepository.findById(replyId)
                     .orElseThrow(() -> new  IllegalArgumentException("게시글 없음"));
 
             Quote quote = quoteRepository.findById(thread.getQuoteId().longValue())
@@ -66,7 +66,7 @@ public class ReportQueryService {
             );
             result.add(reportPendingResponse);
         }
-        for (Long threadId : pendingReportIds) {
+        for (Long replyId : pendingReportIds) {
             CommunityReply reply = replyRepository.findById(replyId)
                     .orElseThrow(() -> new IllegalArgumentException("댓글 없음"));
 
@@ -78,7 +78,7 @@ public class ReportQueryService {
                     .orElseThrow(() -> new IllegalArgumentException("유저 없음"));
 
             ReportPendingResponse reportPendingResponse = new ReportPendingResponse(
-                    reportedUserId(),
+                    reportedUserId,
                     null,
                     reply.getId().longValue(),
                     reply.getCreatedAt(),
@@ -99,6 +99,10 @@ public class ReportQueryService {
         );
         return new ReportSummaryResponse(total, pending, completed);
     }
+     public ReportPendingResponse getReportDetail(Long reportId) {
+        throw new UnsupportedOperationException("신고 상세 조회는 레포 연결 후 구현됩니다.");
+    }
+ */
 
 }*/
 
