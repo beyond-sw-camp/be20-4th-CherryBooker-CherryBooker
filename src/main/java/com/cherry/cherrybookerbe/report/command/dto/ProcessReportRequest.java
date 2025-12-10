@@ -8,6 +8,7 @@ import lombok.Getter;
 public class ProcessReportRequest {
     private Long reportId; // 처리할 신고 1건
     private ReportStatus status; // valid, rejected
+    private String adminComment;
 
     public ProcessReportRequest() {}
 
