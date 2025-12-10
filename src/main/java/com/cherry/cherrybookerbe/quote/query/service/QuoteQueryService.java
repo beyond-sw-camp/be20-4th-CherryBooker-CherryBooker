@@ -34,30 +34,27 @@ public class QuoteQueryService {
                 .collect(Collectors.toList());
     }
 
-    // 내 글귀 페이징 조회 (무한스크롤)
-    public Page<QuoteListResponse> getQuotesByUserPaged(Long userId, Pageable pageable) {
-        return repository.findByUserIdAndStatus(userId, Status.Y, pageable)
-                .map(QuoteListResponse::from);
-    }
-
-    // 책 제목으로 검색
+    // 내 글귀 페이징 조회 (검색 + 무한스크롤)
     public Page<QuoteListResponse> getQuotesByUserPaged(Long userId, String keyword, Pageable pageable) {
-
-        Status status = Status.Y;
 
         Page<Quote> result;
 
+        // 검색어가 없으면 전체 조회
         if (keyword == null || keyword.isBlank()) {
-            result = repository.findByUserIdAndStatus(userId, status, pageable);
-        } else {
+            result = repository.findByUserIdAndStatus(userId, Status.Y, pageable);
+        }
+        // 검색어가 있으면 제목 검색
+        else {
             result = repository.findByUserIdAndStatusAndBookTitleContaining(
-                    userId,
-                    status,
-                    keyword,
-                    pageable
-            );
+                    userId, Status.Y, keyword, pageable);
         }
 
+        return result.map(QuoteListResponse::from);
+    }
+
+    // 책 제목으로 검색
+    public Page<QuoteListResponse> searchQuotes(String keyword, Pageable pageable) {
+        Page<Quote> result = repository.findByBookTitleContaining(keyword, pageable);
         return result.map(QuoteListResponse::from);
     }
 

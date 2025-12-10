@@ -49,4 +49,14 @@ public class QuoteQueryController {
                 quoteQueryService.getQuotesByUserPaged(userId, keyword, pageable)
         );
     }
+
+    // 책 제목으로 검색
+    @GetMapping
+    public Page<QuoteListResponse> searchQuotes(
+            @RequestParam(required = false) String keyword,
+            Pageable pageable) {
+
+        return quoteQueryService.searchQuotes(keyword, pageable);
+    }
+
 }
