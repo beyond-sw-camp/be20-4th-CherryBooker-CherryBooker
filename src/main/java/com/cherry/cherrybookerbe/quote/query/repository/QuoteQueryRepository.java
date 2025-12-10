@@ -16,11 +16,5 @@ public interface QuoteQueryRepository extends JpaRepository<Quote, Long> {
     // 페이징 조회 (무한스크롤)
     Page<Quote> findByUserIdAndStatus(Long userId, Status status, Pageable pageable);
 
-    // 검색 기능 추가 (책 제목 검색)
-    Page<Quote> findByUserIdAndStatusAndBookTitleContaining(
-            Long userId,
-            Status status,
-            String keyword,
-            Pageable pageable
-    );
+    List<Quote> findByUserBookIdAndStatusOrderByCreatedAtDesc(Long userBookId, Status status);
 }
