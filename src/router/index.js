@@ -42,6 +42,19 @@ const routes = [
         path: "/thread",
         name: "thread",
         component: () => import("@/views/thread/ThreadView.vue"),
+    },
+    {
+        path: "/admin/reports",
+        name: "adminReports",
+        component: () => import("../views/admin/report/AdminReportView.vue"),
+        meta: { adminNav: true }
+    },
+    {
+        path: "/admin/reports/:reportId",
+        name: "adminReportDetail",
+        component: () => import("../views/admin/report/AdminReportDetailView.vue"),
+        props: true,
+        meta: { adminNav: true }
     }
 ];
 
