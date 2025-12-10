@@ -16,7 +16,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MariaDBDialect
@@ -27,3 +27,7 @@ eureka:
     fetch-registry: true
     service-url:
       defaultZone: http://localhost:8761/eureka
+jwt:
+  secret: XN5O5LI97d5qXryKAu5OrnJfAeNYNczeN4X3gGnH2i0=
+  access-exp: 500
+  refresh-exp: 12000
