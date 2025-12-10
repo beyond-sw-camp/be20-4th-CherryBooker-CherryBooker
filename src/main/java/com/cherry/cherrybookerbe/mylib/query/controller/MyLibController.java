@@ -7,6 +7,8 @@ import com.cherry.cherrybookerbe.mylib.query.dto.request.MyLibrarySearchRequest;
 import com.cherry.cherrybookerbe.mylib.query.dto.response.MyBookDetailResponse;
 import com.cherry.cherrybookerbe.mylib.query.dto.response.MyLibrarySliceResponse;
 import com.cherry.cherrybookerbe.mylib.query.service.MyLibSearchService;
+import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,20 +25,23 @@ public class MyLibController {
 
     private final MyLibSearchService myLibSearchService;
 
+    @Operation(operationId = " ", summary = " ", description = " ")
     @GetMapping("/books")
     public ResponseEntity<ApiResponse<MyLibrarySliceResponse>> getMyLibrary(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) BookStatus status,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "8") int size
+            @Valid @RequestParam(required = false) String keyword,
+            @Valid @RequestParam(required = false) BookStatus status,
+            @Valid @RequestParam(defaultValue = "0") int page,
+            @Valid @RequestParam(defaultValue = "8") int size
     ) {
         MyLibrarySearchRequest request = new MyLibrarySearchRequest(userPrincipal.userId(), keyword, status, page, size);
         return ResponseEntity.ok(ApiResponse.success(myLibSearchService.getMyLibrary(request)));
     }
 
+    @Operation(operationId = " ", summary = " ", description = " ")
     @GetMapping("/books/{myLibId}/quotes")
-    public ResponseEntity<ApiResponse<MyBookDetailResponse>> getBookQuotes(@PathVariable Long myLibId) {
+    public ResponseEntity<ApiResponse<MyBookDetailResponse>> getBookQuotes(
+            @Valid @PathVariable Long myLibId) {
         return ResponseEntity.ok(ApiResponse.success(myLibSearchService.getBookDetail(myLibId)));
     }
 }
