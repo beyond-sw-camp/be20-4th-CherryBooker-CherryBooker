@@ -8,6 +8,11 @@ import com.cherry.cherrybookerbe.report.domain.Report;
 import com.cherry.cherrybookerbe.report.domain.ReportStatus;
 import com.cherry.cherrybookerbe.report.query.ReportQueryRepository;
 import com.cherry.cherrybookerbe.user.command.domain.entity.User;
+import com.cherry.cherrybookerbe.user.command.repository.UserRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import org.springframework.jdbc.core.JdbcTemplate;
+
 // 신고 저장
 // 5회 이상 => 쿼리 서비스 부르기
 // 관리자 reject 처리 시 → thread에서 삭제 처리
@@ -16,21 +21,52 @@ public class ReportCommandService {
 
     private final ReportCommandRepository reportCommandRepository;
     private final ReportQueryRepository reportQueryRepository;
-    /*
-    *  private final UserRepository userRepository;
-    private final CommunityThreadRepository threadRepository;
-    private final CommunityReplyRepository replyRepository;
-    private final ThreadService threadService;
-    private final UserService userService;*/
+    private final JdbcTemplate jdbcTemplate;
 
+    @PersistenceContext
+    private EntityManager em;
 
     public ReportCommandService(
             ReportCommandRepository reportCommandRepository,
-            ReportQueryRepository reportQueryRepository)
+            ReportQueryRepository reportQueryRepository,
+            JdbcTemplate jdbcTemplate)
     {
         this.reportCommandRepository = reportCommandRepository;
         this.reportQueryRepository = reportQueryRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
+
+    // 신고자 조회
+    private User findUserById(Long userId) {
+        String sql = "select user_id from users where user_id = ?";
+        Integer count =  jdbcTemplate.queryForObject(sql, Integer.class, userId);
+
+        if(count == null || count ==0){ // 신고자 존재 여부 확인
+            throw new IllegalArgumentException("User not found");
+        }
+        return em.getReference(User.class, userId); //report에 넣을 id만 있는 jpa 용 임시객체
+    }
+    // 게시글 조회
+    private CommunityThread findCommunityThreadById(Long threadId) {
+        String sql = "select threads_id from threads where threads_id = ? AND is_deleted = false";
+        Integer count =  jdbcTemplate.queryForObject(sql, Integer.class, threadId);
+
+        if(count ==null || count==0) {
+            throw new IllegalArgumentException("Community thread not found");
+        }
+        return em.getReference(CommunityThread.class, threadId);
+    }
+    // 댓글 조회
+    private CommunityReply findCommunityReplyById(Long replyId) {
+        String sql = "select threads_reply_id from threads_reply where threads_reply_id = ? AND is_deleted = false";
+        Integer count =  jdbcTemplate.queryForObject(sql, Integer.class, replyId);
+
+        if(count ==null || count ==0) {
+            throw new IllegalArgumentException("Community reply not found");
+        }
+        return em.getReference(CommunityReply.class, replyId);
+    }
+
 
     // 신고 등록
     public void create(CreateReportRequest createRequest) {
@@ -47,101 +83,70 @@ public class ReportCommandService {
         if (threadId != null && threadReplyId != null) {
             throw new IllegalArgumentException("게시글과 댓글은 동시에 신고할 수 없습니다.");
         }
-        //  user, thread, threadReply repository가 없으므로 임시 더미 객체 (컴파일용)
-        //레포지토리 생기면 삭제 예정
-        User reporter = null;
+
+        // 신고자 직접 조회
+        User reporter = findUserById(reporterId);
         CommunityThread reportedThread = null;
         CommunityReply reportedReply = null;
 
-        // user, thread 리포지토리 미생성에 따른 주석 처리
-        /*신고자 조회
-        User reporter = userRepository.findById(reporterId)
-                .orElseThrow(() -> new IllegalArgumentException("신고자 유저 없음"));
-        CommunityThread reportedThread = null;
-        CommunityReply reportedReply = null;
+        if(threadId !=null) {
+            reportedThread = findCommunityThreadById(threadId);
+        }
+        if(threadReplyId != null) {
+            reportedReply = findCommunityReplyById(threadReplyId);
+        }
 
-
-        if(threadId != null) {
-            /* 신고 게시글 레포지토리
-            reportedThread = threadRepository.findById(threadId)
-                .orElseThrow(() -> new IllegalArgumentException("신고 대상 게시글 없음"));
-        if (threadReplyId != null) {
-            reportedReply = replyRepository.findById(threadReplyId)
-                    .orElseThrow(() -> new IllegalArgumentException("신고 대상 댓글 없음"));
-        }  */
-
-        // 게시글 신고
-        if (threadId != null) {
-            Report report = Report.builder()
+        // 게시글 or 댓글 신고 등록
+        Report report = Report.builder()
                     .user(reporter) //신고자
-                    .threads(reportedThread) //신고 대상 게시글
-                    .threadsReply(null)
+                    .threads(reportedThread) //신고 대상 게시글인 경우
+                    .threadsReply(reportedReply) // 댓글 신고인 경우
                     .status(ReportStatus.PENDING) // 게시글
                     .build();
-            reportCommandRepository.save(report);
-        }
-        // 댓글 신고
-        if(threadReplyId != null) {
-            Report report = Report.builder()
-                    .user(reporter)
-                    .threads(null)
-                    .threadsReply(reportedReply) // 신고 대상 댓글
-                    .status(ReportStatus.PENDING)
-                    .build();
-            reportCommandRepository.save(report);
-        }
+        reportCommandRepository.save(report); // 저장
 
     }
     // 관리자 판단
-    public void process(ProcessReportRequest processRequest) throws IllegalAccessException {
+    public void process(ProcessReportRequest processRequest)  {
         Long reportId = processRequest.getReportId(); // 관리자가 클릭한 신고 1건
         ReportStatus status = processRequest.getStatus(); // valid or rejected
+        String adminComment = processRequest.getAdminComment();
 
         Report report = reportCommandRepository.findById(reportId)
-                .orElseThrow(() -> new IllegalAccessException("신고가 존재하지 않습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("신고가 존재하지 않습니다."));
 
         //신고 받은 게시글 상태 변경(삭제 or 반려)
+
         if(status == ReportStatus.VALID) {
-            report.approve(); // 삭제
+            report.approve(adminComment); // 삭제
         } else if(status == ReportStatus.REJECTED) {
-            report.reject(); // 반려
+            report.reject(adminComment); // 반려
         }else {
-            throw new IllegalAccessException("잘못된 상태 입니다.");
+            throw new IllegalArgumentException("잘못된 상태 입니다.");
         }
 
-        //valid -> soft delete
-        if (status == ReportStatus.VALID) {
+        // 한번더 막는 장치 (아래의 로직 실행 전에)
+        if(status != ReportStatus.VALID) return;
 
-            // 게시물 신고
-            if(report.getThreads() != null) {
-                CommunityThread reportedThreads = report.getThreads();
+        // 게시글 삭제
+        if(report.getThreads() != null) {
+            Integer threadId = report.getThreads().getId();
 
-                /*
-                Long reportedUserId = targetThread.getUserId();
-                User reportedUser = userRepository.findById(reportedUserId)
-                        .orElseThrow(() -> new IllegalArgumentException("유저 없음"));
-                /*
-                threadService.delete(reportedThread);
-                userService.increaseDeleteCount(reportedUser);
-                userService.suspendIfOverLimit(reportedUser);
-                */
-            }
-            //댓글 신고
-            if(report.getThreadsReply() != null) {
-                CommunityReply reportedReply = report.getThreadsReply();
+            jdbcTemplate.update(
+                    "UPDATE threads SET is_deleted = true WHERE threads_id=?",
+                    threadId
+            );
 
-                /*
-                Long reportedUserId = reportedReply.getUserId();
-                User reportedUser = userRepository.findById(reportedUserId) // ✅ 제재 대상 유저
-                        .orElseThrow(() -> new IllegalArgumentException("유저 없음"));
-                // 팀원 서비스 연결 전까지는 주석 유지
-                /*
-                threadService.delete(reportedReply);
-                userService.increaseDeleteCount(reportedUserId);
-                userService.suspendIfOverLimit(reportedUserId);
-             */
-            }
+        }
 
+        // 댓글 삭제
+        if(report.getThreadsReply() != null) {
+            Integer replyId = report.getThreadsReply().getId();
+
+            jdbcTemplate.update(
+                    "UPDATE threads_reply SET is_deleted = true, deleted_at = NOW() WHERE threads_reply_id = ?",
+                    replyId
+            );
         }
 
     }
