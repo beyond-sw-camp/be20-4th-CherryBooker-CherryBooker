@@ -9,6 +9,7 @@ public class CommunityThreadSummaryResponse {
 
     private final Integer threadId;
     private final Integer userId;
+    private final String userNickname;
     private final Integer quoteId;
     private final String quoteContent;
     private final LocalDateTime createdAt;
@@ -19,6 +20,7 @@ public class CommunityThreadSummaryResponse {
 
     public CommunityThreadSummaryResponse(Integer threadId,
                                           Integer userId,
+                                          String userNickname,
                                           Integer quoteId,
                                           String quoteContent,
                                           LocalDateTime createdAt,
@@ -28,6 +30,7 @@ public class CommunityThreadSummaryResponse {
                                           int reportCount) {
         this.threadId = threadId;
         this.userId = userId;
+        this.userNickname = userNickname;
         this.quoteId = quoteId;
         this.quoteContent = quoteContent;
         this.createdAt = createdAt;

@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 
 import com.cherry.cherrybookerbe.quote.command.entity.Quote;
 import com.cherry.cherrybookerbe.quote.query.repository.QuoteQueryRepository;
+import com.cherry.cherrybookerbe.user.command.domain.entity.User;
+import com.cherry.cherrybookerbe.user.command.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,11 +32,13 @@ public class CommunityThreadQueryService {
 
     private final CommunityThreadRepository communityThreadRepository;
     private final QuoteQueryRepository quoteRepository;
+    private final UserRepository userRepository;
 
     public CommunityThreadQueryService(CommunityThreadRepository communityThreadRepository,
-                                       QuoteQueryRepository quoteRepository) {
+                                       QuoteQueryRepository quoteRepository, UserRepository userRepository) {
         this.communityThreadRepository = communityThreadRepository;
         this.quoteRepository = quoteRepository;
+        this.userRepository = userRepository;
     }
 
     /** 스레드 목록 조회 (페이징) */
@@ -55,7 +59,7 @@ public class CommunityThreadQueryService {
 
         List<CommunityThread> threads = threadPage.getContent();
 
-        // 글귀 ID 모아서 한 번에 조회
+        // 1) 글귀 ID 모아서 한 번에 조회 (기존)
         List<Long> quoteIds = threads.stream()
                 .map(CommunityThread::getQuoteId)
                 .map(Integer::longValue)
@@ -66,8 +70,19 @@ public class CommunityThreadQueryService {
                 .stream()
                 .collect(Collectors.toMap(Quote::getQuoteId, q -> q));
 
+        // 작성자 userId 들 모아서 한 번에 조회
+        List<Integer> userIds = threads.stream()
+                .map(CommunityThread::getUserId)
+                .distinct()
+                .toList();
+
+        Map<Integer, User> userMap = userRepository.findAllById(userIds)
+                .stream()
+                .collect(Collectors.toMap(User::getUserId, u -> u));
+
+        // DTO 매핑할 때 닉네임도 함께 넣기
         List<CommunityThreadSummaryResponse> summaries = threads.stream()
-                .map(thread -> mapThreadSummary(thread, quoteMap))
+                .map(thread -> mapThreadSummary(thread, quoteMap, userMap))
                 .toList();
 
         Pagination pagination = Pagination.builder()
@@ -91,6 +106,7 @@ public class CommunityThreadQueryService {
         all.add(thread);
         all.addAll(thread.getChildren());
 
+        // 글귀 조회
         List<Long> quoteIds = all.stream()
                 .map(CommunityThread::getQuoteId)
                 .map(Integer::longValue)
@@ -101,16 +117,33 @@ public class CommunityThreadQueryService {
                 .stream()
                 .collect(Collectors.toMap(Quote::getQuoteId, q -> q));
 
+        // 작성자 userId 모아서 한번에 조회
+        List<Integer> userIds = all.stream()
+                .map(CommunityThread::getUserId)
+                .distinct()
+                .toList();
+
+        Map<Integer, User> userMap = userRepository.findAllById(userIds)
+                .stream()
+                .collect(Collectors.toMap(User::getUserId, u -> u));
+
         String threadContent = getQuoteContent(quoteMap, thread.getQuoteId());
 
         List<CommunityReplyResponse> replies = thread.getChildren().stream()
-                .map(child -> mapReply(child, quoteMap))
+                .map(child -> mapReply(child, quoteMap, userMap))
                 .toList();
 
-        return mapThreadDetail(thread, threadContent, replies);
+        return mapThreadDetail(thread, threadContent, replies, userMap);
     }
 
+
     /* ====== 내부 헬퍼 메서드들 ====== */
+
+    private String getUserNickname(Map<Integer, User> userMap, Integer userId) {
+        if (userId == null) return null;
+        User u = userMap.get(userId);
+        return u != null ? u.getUserNickname() : "알 수 없음";
+    }
 
     private String getQuoteContent(Map<Long, Quote> map, Integer quoteId) {
         if (quoteId == null) return null;
@@ -119,12 +152,19 @@ public class CommunityThreadQueryService {
     }
 
     private CommunityThreadSummaryResponse mapThreadSummary(CommunityThread thread,
-                                                            Map<Long, Quote> quoteMap) {
+                                                            Map<Long, Quote> quoteMap,
+                                                            Map<Integer, User> userMap) {
+
+        String content = getQuoteContent(quoteMap, thread.getQuoteId());
+
+        String nickname = getUserNickname(userMap, thread.getUserId());
+
         return new CommunityThreadSummaryResponse(
                 thread.getId(),
                 thread.getUserId(),
+                nickname,
                 thread.getQuoteId(),
-                getQuoteContent(quoteMap, thread.getQuoteId()),
+                content,
                 thread.getCreatedAt(),
                 thread.getUpdatedAt(),
                 thread.isUpdated(),
@@ -133,12 +173,17 @@ public class CommunityThreadQueryService {
         );
     }
 
+
     private CommunityThreadDetailResponse mapThreadDetail(CommunityThread thread,
                                                           String quoteContent,
-                                                          List<CommunityReplyResponse> replies) {
+                                                          List<CommunityReplyResponse> replies,
+                                                          Map<Integer, User> userMap) {
+        String nickname = getUserNickname(userMap, thread.getUserId());
+
         return new CommunityThreadDetailResponse(
                 thread.getId(),
                 thread.getUserId(),
+                nickname,
                 thread.getQuoteId(),
                 quoteContent,
                 thread.getCreatedAt(),
@@ -150,11 +195,16 @@ public class CommunityThreadQueryService {
         );
     }
 
+
     private CommunityReplyResponse mapReply(CommunityThread reply,
-                                            Map<Long, Quote> quoteMap) {
+                                            Map<Long, Quote> quoteMap,
+                                            Map<Integer, User> userMap) {
+        String nickname = getUserNickname(userMap, reply.getUserId());
+
         return new CommunityReplyResponse(
                 reply.getId(),
                 reply.getUserId(),
+                nickname,
                 reply.getQuoteId(),
                 getQuoteContent(quoteMap, reply.getQuoteId()),
                 reply.getCreatedAt(),
@@ -164,6 +214,5 @@ public class CommunityThreadQueryService {
                 reply.getReportCount()
         );
     }
+
 }
-
-
