@@ -71,6 +71,12 @@
       @close="showAddModal = false"
       @added="handleBookAdded"
     />
+
+    <BookDetailModal
+      :show="showDetailModal"
+      :book="selectedBook"
+      @close="showDetailModal = false"
+    />
   </div>
 </template>
 
@@ -80,6 +86,7 @@ import axios from "axios";
 import BookCard from "@/components/mylib/BookCard.vue";
 import AddBookCard from "@/components/mylib/AddBookCard.vue";
 import AddBookModal from "@/components/mylib/AddBookModal.vue";
+import BookDetailModal from "@/components/mylib/BookDetailModal.vue";
 import ScrollArrow from "@/components/mylib/ScrollArrow.vue";
 
 const PAGE_SIZE = 8;
@@ -109,6 +116,8 @@ const errorMessage = ref("");
 const infoMessage = ref("");
 const completingBookId = ref(null);
 const showAddModal = ref(false);
+const showDetailModal = ref(false);
+const selectedBook = ref(null);
 
 const infiniteTarget = ref(null);
 let observer;
@@ -192,7 +201,8 @@ const handleBookAdded = () => {
 };
 
 const openBookDetail = (book) => {
-  console.log("선택된 도서:", book);
+  selectedBook.value = book;
+  showDetailModal.value = true;
 };
 
 const markAsRead = async (book) => {
