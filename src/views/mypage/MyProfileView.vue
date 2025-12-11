@@ -1,14 +1,24 @@
 <template>
   <div class="library-container">
-
     <!-- 상단 제목 -->
     <div class="page-title">
       <span>내 프로필</span>
     </div>
 
-    <!-- 프로필 카드 -->
-    <div class="profile-card">
+    <!-- 로딩 중 -->
+    <div v-if="loading" class="loading">
+      <div class="spinner"></div>
+      <p>정보를 불러오는 중...</p>
+    </div>
 
+    <!-- 에러 -->
+    <div v-else-if="error" class="error">
+      <p>{{ error }}</p>
+      <button @click="loadUserInfo" class="retry-btn">다시 시도</button>
+    </div>
+
+    <!-- 프로필 카드 -->
+    <div v-else class="profile-card">
       <!-- 프로필 이미지 -->
       <div class="profile-img-box">
         <img src="/images/character1.png" class="profile-img" />
@@ -18,42 +28,201 @@
       <div class="info-row">
         <span class="label">닉네임</span>
         <div class="input-box">
-          <input type="text" v-model="nickname" class="input" />
-          <button class="edit-btn">수정</button>
+          <input
+              type="text"
+              v-model="nickname"
+              class="input"
+              :disabled="!isEditingNickname"
+              @keyup.enter="isEditingNickname && saveNickname()"
+          />
+          <button
+              v-if="!isEditingNickname"
+              @click="startEditNickname"
+              class="edit-btn"
+          >
+            수정
+          </button>
+          <button
+              v-else
+              @click="saveNickname"
+              class="save-btn"
+              :disabled="savingNickname"
+          >
+            {{ savingNickname ? '저장 중...' : '저장' }}
+          </button>
+          <button
+              v-if="isEditingNickname"
+              @click="cancelEditNickname"
+              class="cancel-btn"
+          >
+            취소
+          </button>
         </div>
       </div>
 
       <div class="info-row">
         <span class="label">이메일</span>
         <div class="input-box">
-          <input type="text" v-model="email" class="input" disabled />
+          <input type="text" :value="email" class="input" disabled />
         </div>
       </div>
 
       <div class="info-row">
         <span class="label">가입일</span>
         <div class="input-box">
-          <input type="text" v-model="joinDate" class="input" disabled />
+          <input type="text" :value="joinDate" class="input" disabled />
         </div>
       </div>
 
       <!-- 버튼 2개 -->
       <div class="btn-row">
-        <button class="delete-btn">회원탈퇴</button>
-        <button class="logout-btn">로그아웃</button>
+        <button @click="handleWithdraw" class="delete-btn">회원탈퇴</button>
+        <button @click="handleLogout" class="logout-btn">로그아웃</button>
       </div>
-
     </div>
-
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed, onMounted } from 'vue'
+import { useAuthStore } from '@/stores/AuthStore'
+import { updateNicknameApi } from '@/api/AuthApi'
 
-const nickname = ref("김다독");
-const email = ref("example@gmail.com");
-const joinDate = ref("2025.12.03");
+const authStore = useAuthStore()
+
+// State
+const loading = ref(false)
+const error = ref(null)
+const isEditingNickname = ref(false)
+const savingNickname = ref(false)
+const originalNickname = ref('')
+
+// Computed
+const nickname = ref('')
+const email = computed(() => authStore.user?.email || '-')
+const joinDate = computed(() => {
+  if (!authStore.user?.createdAt) return '-'
+
+  const date = new Date(authStore.user.createdAt)
+  return date.toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).replace(/\. /g, '.').replace(/\.$/, '')
+})
+
+// Methods
+const loadUserInfo = async () => {
+  loading.value = true
+  error.value = null
+
+  try {
+    await authStore.fetchUserMe()
+
+    // 닉네임 설정
+    nickname.value = authStore.user?.nickname || ''
+    originalNickname.value = nickname.value
+
+    console.log('✅ 사용자 정보 로드 성공:', authStore.user)
+  } catch (e) {
+    console.error('❌ 사용자 정보 로드 실패:', e)
+    error.value = '사용자 정보를 불러오는데 실패했습니다.'
+  } finally {
+    loading.value = false
+  }
+}
+
+// 닉네임 수정 시작
+const startEditNickname = () => {
+  isEditingNickname.value = true
+  originalNickname.value = nickname.value
+}
+
+// 닉네임 수정 취소
+const cancelEditNickname = () => {
+  nickname.value = originalNickname.value
+  isEditingNickname.value = false
+}
+
+// 닉네임 저장
+const saveNickname = async () => {
+  const trimmedNickname = nickname.value.trim()
+
+  if (!trimmedNickname) {
+    alert('닉네임을 입력해주세요.')
+    return
+  }
+
+  if (trimmedNickname === originalNickname.value) {
+    isEditingNickname.value = false
+    return
+  }
+
+  savingNickname.value = true
+
+  try {
+    console.log('📝 닉네임 수정 요청:', trimmedNickname)
+
+    // 백엔드 API 호출
+    await updateNicknameApi(trimmedNickname)
+
+    console.log('✅ 닉네임 수정 성공')
+
+    // 사용자 정보 다시 불러오기
+    await authStore.fetchUserMe()
+
+    // 상태 업데이트
+    nickname.value = authStore.user.nickname
+    originalNickname.value = nickname.value
+    isEditingNickname.value = false
+
+    alert('닉네임이 수정되었습니다.')
+  } catch (e) {
+    console.error('❌ 닉네임 수정 실패:', e)
+
+    const errorMessage = e.response?.data?.message || '닉네임 수정에 실패했습니다.'
+    alert(errorMessage)
+
+    // 원래 닉네임으로 복구
+    nickname.value = originalNickname.value
+  } finally {
+    savingNickname.value = false
+  }
+}
+
+// 로그아웃
+const handleLogout = async () => {
+  if (confirm('로그아웃 하시겠습니까?')) {
+    try {
+      await authStore.logout()
+      console.log('✅ 로그아웃 성공')
+    } catch (e) {
+      console.error('❌ 로그아웃 실패:', e)
+      // 실패해도 로컬 상태는 클리어
+      authStore.clearAuthState()
+    }
+  }
+}
+
+// 회원탈퇴
+const handleWithdraw = () => {
+  if (confirm('정말 회원탈퇴 하시겠습니까?\n탈퇴 후에는 계정을 복구할 수 없습니다.')) {
+    // TODO: 회원탈퇴 API 연동
+    alert('회원탈퇴 기능은 준비 중입니다.')
+  }
+}
+
+// 마운트 시 사용자 정보 로드
+onMounted(() => {
+  // 상세 정보가 없으면 가져오기
+  if (!authStore.user?.nickname || !authStore.user?.createdAt) {
+    loadUserInfo()
+  } else {
+    // 이미 있으면 바로 설정
+    nickname.value = authStore.user.nickname
+    originalNickname.value = nickname.value
+  }
+})
 </script>
 
 <style scoped>
@@ -73,7 +242,6 @@ const joinDate = ref("2025.12.03");
   padding: 14px 70px;
   border: 2px solid #df3e3e;
   border-radius: 40px;
-
   font-size: 20px;
   font-weight: 600;
   color: #df3e3e;
@@ -81,7 +249,62 @@ const joinDate = ref("2025.12.03");
   box-shadow: 0 4px 10px rgba(223, 62, 62, 0.15);
 }
 
-/* 프로필 카드 전체 */
+/* 로딩 */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #ffe5b4;
+  border-top: 5px solid #df3e3e;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading p {
+  color: #666;
+  font-size: 16px;
+}
+
+/* 에러 */
+.error {
+  padding: 60px 20px;
+}
+
+.error p {
+  color: #df3e3e;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.retry-btn {
+  background: #df3e3e;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.retry-btn:hover {
+  background: #c53535;
+}
+
+/* 프로필 카드 */
 .profile-card {
   margin: 30px auto;
   width: 500px;
@@ -92,7 +315,6 @@ const joinDate = ref("2025.12.03");
   box-shadow: 0 8px 15px rgba(0,0,0,0.08);
 }
 
-/* 프로필 이미지 */
 .profile-img-box {
   display: flex;
   justify-content: center;
@@ -123,7 +345,6 @@ const joinDate = ref("2025.12.03");
   font-weight: 500;
 }
 
-/* 입력 박스 */
 .input-box {
   display: flex;
   align-items: center;
@@ -138,19 +359,67 @@ const joinDate = ref("2025.12.03");
   padding: 0 12px;
   background: #fffdf7;
   font-size: 14px;
+  transition: all 0.3s;
 }
 
-/* 수정 버튼 */
-.edit-btn {
-  background: #ffd37c;
+.input:disabled {
+  background: #f5f5f5;
+  color: #999;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #ffa500;
+  box-shadow: 0 0 0 3px rgba(255, 165, 0, 0.1);
+}
+
+/* 버튼들 */
+.edit-btn,
+.save-btn,
+.cancel-btn {
   border: none;
   padding: 6px 14px;
   border-radius: 15px;
   font-size: 13px;
   cursor: pointer;
+  transition: all 0.3s;
 }
 
-/* 버튼 2개 */
+.edit-btn {
+  background: #ffd37c;
+}
+
+.edit-btn:hover {
+  background: #ffc55c;
+  transform: translateY(-1px);
+}
+
+.save-btn {
+  background: #7cd992;
+  color: white;
+}
+
+.save-btn:hover:not(:disabled) {
+  background: #6bc982;
+  transform: translateY(-1px);
+}
+
+.save-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.cancel-btn {
+  background: #ff9aa3;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #ff8a93;
+  transform: translateY(-1px);
+}
+
+/* 하단 버튼 */
 .btn-row {
   display: flex;
   justify-content: center;
@@ -158,23 +427,33 @@ const joinDate = ref("2025.12.03");
   margin-top: 20px;
 }
 
-.delete-btn {
-  background: #ff9aa3;
+.delete-btn,
+.logout-btn {
   border: none;
   padding: 10px 24px;
-  color: white;
   border-radius: 20px;
   cursor: pointer;
   font-size: 14px;
+  transition: all 0.3s;
+}
+
+.delete-btn {
+  background: #ff9aa3;
+  color: white;
+}
+
+.delete-btn:hover {
+  background: #ff8a93;
+  transform: translateY(-2px);
 }
 
 .logout-btn {
   background: #fcd487;
-  border: none;
-  padding: 10px 24px;
   color: #444;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 14px;
+}
+
+.logout-btn:hover {
+  background: #fcc477;
+  transform: translateY(-2px);
 }
 </style>
