@@ -46,9 +46,12 @@ public class AuthController {
     //로그 아웃
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(@AuthenticationPrincipal UserPrincipal principal) {
+        // 1) principal 이 있는 경우에만 서버 쪽 토큰 스토어에서 삭제
+        if (principal != null) {
+            tokenStore.delete(principal.userId().toString());
+        }
 
-        tokenStore.delete(principal.userId().toString());
-
+        // 2) 클라이언트 refreshToken 쿠키 만료 처리 (항상 수행)
         ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
                 .maxAge(0)
                 .path("/")
@@ -61,5 +64,6 @@ public class AuthController {
                 .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
                 .body(ApiResponse.success(null));
     }
+
 }
 

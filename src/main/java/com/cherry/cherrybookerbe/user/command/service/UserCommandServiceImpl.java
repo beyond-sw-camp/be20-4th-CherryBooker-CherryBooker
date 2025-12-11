@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserCommandServiceImpl implements UserCommandService {
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     @Override
@@ -25,6 +25,6 @@ public class UserCommandServiceImpl implements UserCommandService {
             throw new IllegalArgumentException("탈퇴한 회원입니다.");
         }
 
-        user.updateNickName(request.getNickkname());
+        user.updateNickName(request.getNickname());
     }
 }

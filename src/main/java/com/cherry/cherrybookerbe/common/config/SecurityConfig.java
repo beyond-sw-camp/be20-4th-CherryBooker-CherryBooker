@@ -57,6 +57,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login/**", "/oauth2/**", "/login/oauth2/**").permitAll()
                         .requestMatchers("/auth/**").permitAll()
+                        // 2) 관리자 전용 API
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().permitAll()
                 )
 
@@ -64,7 +66,6 @@ public class SecurityConfig {
                 // OAuth2 설정
                 // ========================================================
                 .oauth2Login(oauth2 -> oauth2
-                        //.loginPage("/login")
                         .userInfoEndpoint(u -> u.userService(oAuth2UserService))
                         .successHandler(oAuth2SuccessHandler)
                 );
