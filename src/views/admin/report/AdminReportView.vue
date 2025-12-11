@@ -170,7 +170,6 @@ const formatDate = (date) => {
 };
 </script>
 
-
 <style scoped>
 .admin-container {
   padding: 40px;
@@ -256,16 +255,6 @@ const formatDate = (date) => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.green-text {
-  color: green;
-}
-.red-text {
-  color: red;
-}
-.gray-text {
-  color: gray;
 }
 
 .pagination {
