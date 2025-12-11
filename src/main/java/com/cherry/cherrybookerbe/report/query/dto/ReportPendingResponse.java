@@ -8,26 +8,27 @@ import java.time.LocalDateTime;
 // 신고 처리 목록 조회 dto
 @Getter
 public class ReportPendingResponse {
-    private Long reportedUserId; // 유저 id fk
+
+    private Long reportId;       // 🔥 추가됨
+    private Long reportedUserId;
     private String targetNickname;
 
-    private Long threadId; // 스레드 id fk
-    private Long threadReplyId; // 스레드 답글 id fk
+    private Long threadId;
+    private Long threadReplyId;
 
-    private int reportCount; // 신고 횟수
-    private int deleteCount; // 삭제 당한 횟수
+    private int reportCount;
+    private int deleteCount;
 
     private LocalDateTime createdAt;
     private String quoteContent;
 
-    private ReportStatus status; // pending, valid, rejected
-    private String adminComment; // 관리자 코멘트
+    private ReportStatus status;
+    private String adminComment;
 
-    // 기본 생성자
-    public ReportPendingResponse() {
-    }
-    // 전체 생성자
+    public ReportPendingResponse() {}
+
     public ReportPendingResponse(
+            Long reportId,
             Long reportedUserId,
             String targetNickname,
             Long threadId,
@@ -39,6 +40,7 @@ public class ReportPendingResponse {
             ReportStatus status,
             String adminComment
     ) {
+        this.reportId = reportId;
         this.reportedUserId = reportedUserId;
         this.targetNickname = targetNickname;
         this.threadId = threadId;
@@ -50,5 +52,4 @@ public class ReportPendingResponse {
         this.status = status;
         this.adminComment = adminComment;
     }
-
 }
