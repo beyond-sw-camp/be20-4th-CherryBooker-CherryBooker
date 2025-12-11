@@ -72,9 +72,6 @@ const adminComment = ref("");
 
 const loadDetail = async () => {
   const res = await getReportDetail(route.params.reportId);
-  console.log("🔥 res = ", res);
-  console.log("🔥 res.data = ", res.data);
-  console.log("🔥 res.data.data = ", res.data?.data);
   detail.value = res.data;
 };
 
@@ -85,7 +82,7 @@ const goBack = () => {
 const process = async (status) => {
   try {
     await processReport({
-      reportId: detail.value.reportId,  // 🔥 핵심
+      reportId: detail.value.reportId,
       status: status,                  // VALID or REJECTED
       adminComment: adminComment.value,
     });
