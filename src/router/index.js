@@ -46,9 +46,14 @@ const routes = [
     },
     {
         path: "/thread",
-        name: "thread",
-        component: () => import("@/views/thread/ThreadView.vue"),
-    }
+        name: "threadList",
+        component: () => import("@/views/thread/ThreadListView.vue"),
+    },
+    {
+        path: "/thread/:threadId",
+        name: "threadDetail",
+        component: () => import("@/views/thread/ThreadDetailView.vue"),
+    },
 ];
 
 const router = createRouter({
