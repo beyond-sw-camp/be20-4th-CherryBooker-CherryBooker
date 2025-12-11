@@ -2,7 +2,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Angkor&display=swap" rel="stylesheet">
 
   <div class="login-container">
-
     <!-- 배경 장식 -->
     <div class="bg-cherry"></div>
 
@@ -12,7 +11,7 @@
       <h2 class="subtitle">Login</h2>
 
       <!-- Google 로그인 -->
-      <button class="google-btn">
+      <button class="google-btn" @click="handleSocialLogin('google')">
         <img
             class="google-icon"
             src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
@@ -22,7 +21,7 @@
       </button>
 
       <!-- Kakao 로그인 -->
-      <button class="kakao-btn">
+      <button class="kakao-btn" @click="handleSocialLogin('kakao')">
         <img
             class="kakao-icon"
             src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_small.png"
@@ -41,6 +40,11 @@
 </template>
 
 <script setup>
+import { redirectToSocialLogin } from '@/api/AuthApi'
+
+const handleSocialLogin = (provider) => {
+  redirectToSocialLogin(provider)
+}
 </script>
 
 <style scoped>
@@ -62,7 +66,6 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-
   position: absolute;
   width: 100%;
   height: 100%;
@@ -118,6 +121,12 @@ button {
   gap: 10px;
   cursor: pointer;
   margin-bottom: 14px;
+  transition: all 0.3s;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Google 버튼 */
@@ -126,10 +135,18 @@ button {
   color: white;
 }
 
-/* 🟡 Kakao 버튼 */
+.google-btn:hover {
+  background: #357ae8;
+}
+
+/* Kakao 버튼 */
 .kakao-btn {
   background: #FEE500;
   color: #3B1E1E;
+}
+
+.kakao-btn:hover {
+  background: #fdd835;
 }
 
 /* 안내 문구 */
@@ -147,5 +164,12 @@ button {
   font-size: 14px;
   text-decoration: underline;
   cursor: pointer;
+  display: inline-block;
+  margin-top: 10px;
+  transition: color 0.3s;
+}
+
+.admin-login:hover {
+  color: #e63e3e;
 }
 </style>
