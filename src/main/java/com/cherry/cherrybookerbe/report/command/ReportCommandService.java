@@ -1,12 +1,10 @@
 package com.cherry.cherrybookerbe.report.command;
 
-import com.cherry.cherrybookerbe.community.command.domain.entity.CommunityReply;
 import com.cherry.cherrybookerbe.community.command.domain.entity.CommunityThread;
 import com.cherry.cherrybookerbe.report.command.dto.CreateReportRequest;
 import com.cherry.cherrybookerbe.report.command.dto.ProcessReportRequest;
 import com.cherry.cherrybookerbe.report.domain.Report;
 import com.cherry.cherrybookerbe.report.domain.ReportStatus;
-import com.cherry.cherrybookerbe.report.query.ReportQueryRepository;
 import com.cherry.cherrybookerbe.user.command.domain.entity.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -23,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReportCommandService {
 
     private final ReportCommandRepository reportCommandRepository;
-    private final ReportQueryRepository reportQueryRepository;
     private final JdbcTemplate jdbcTemplate;
 
     @PersistenceContext
@@ -31,18 +28,21 @@ public class ReportCommandService {
 
     public ReportCommandService(
             ReportCommandRepository reportCommandRepository,
-            ReportQueryRepository reportQueryRepository,
             JdbcTemplate jdbcTemplate)
     {
         this.reportCommandRepository = reportCommandRepository;
-        this.reportQueryRepository = reportQueryRepository;
         this.jdbcTemplate = jdbcTemplate;
     }
 
     // 신고자 조회
     private User findUserById(Long userId) {
-        String sql = "select user_id from users where user_id = ?";
-        Integer count =  jdbcTemplate.queryForObject(sql, Integer.class, userId);
+
+        Integer count = jdbcTemplate.queryForObject(
+                "select count(*) from users where user_id = ?",
+                Integer.class,
+                userId
+        );
+
 
         if(count == null || count ==0){ // 신고자 존재 여부 확인
             throw new IllegalArgumentException("User not found");
@@ -51,62 +51,49 @@ public class ReportCommandService {
     }
     // 게시글 조회
     private CommunityThread findCommunityThreadById(Long threadId) {
-        String sql = "select threads_id from threads where threads_id = ? AND is_deleted = false";
-        Integer count =  jdbcTemplate.queryForObject(sql, Integer.class, threadId);
-
+        Integer count = jdbcTemplate.queryForObject(
+                "select count(*) from threads where threads_id = ? AND is_deleted = 0",
+                Integer.class,
+                threadId
+        );
         if(count ==null || count==0) {
             throw new IllegalArgumentException("Community thread not found");
         }
         return em.getReference(CommunityThread.class, threadId);
     }
-    // 댓글 조회
-    private CommunityReply findCommunityReplyById(Long replyId) {
-        String sql = "select threads_reply_id from threads_reply where threads_reply_id = ? AND is_deleted = false";
-        Integer count =  jdbcTemplate.queryForObject(sql, Integer.class, replyId);
-
-        if(count ==null || count ==0) {
-            throw new IllegalArgumentException("Community reply not found");
-        }
-        return em.getReference(CommunityReply.class, replyId);
-    }
-
 
     // 신고 등록
     public void create(CreateReportRequest createRequest) {
-        Long reporterId =  createRequest.getReporterId();
-        Long threadId =  createRequest.getThreadId();
-        Long threadReplyId = createRequest.getThreadsReplyId();
+        Long reporterId =  createRequest.getReporterId(); // TODO: 타입 맞는지 확인 필요
+        Long threadId =  createRequest.getThreadId(); // TODO: 타입 맞는지 확인 필요
 
         //신고 검증
-        if (threadId == null && threadReplyId == null) {
+        if (threadId == null ) {
             throw new IllegalArgumentException("신고 대상이 존재하지 않습니다.");
-        }
-
-        // 동시 신고 차단
-        if (threadId != null && threadReplyId != null) {
-            throw new IllegalArgumentException("게시글과 댓글은 동시에 신고할 수 없습니다.");
         }
 
         // 신고자 직접 조회
         User reporter = findUserById(reporterId);
         CommunityThread reportedThread = null;
-        CommunityReply reportedReply = null;
 
         if(threadId !=null) {
             reportedThread = findCommunityThreadById(threadId);
         }
-        if(threadReplyId != null) {
-            reportedReply = findCommunityReplyById(threadReplyId);
-        }
 
-        // 게시글 or 댓글 신고 등록
+        // 게시글  신고 등록
         Report report = Report.builder()
                     .user(reporter) //신고자
                     .threads(reportedThread) //신고 대상 게시글인 경우
-                    .threadsReply(reportedReply) // 댓글 신고인 경우
                     .status(ReportStatus.PENDING) // 게시글
                     .build();
         reportCommandRepository.save(report); // 저장
+
+        // 신고 될 경우 게시물 report_count +1
+        jdbcTemplate.update(
+                "UPDATE threads SET report_count = report_count + 1 WHERE threads_id = ?",
+                threadId
+        );
+
 
     }
     // 관리자 판단
@@ -152,28 +139,6 @@ public class ReportCommandService {
                     reportedUserId
             );
 
-        }
-
-        // 댓글 삭제
-        if(report.getThreadsReply() != null) {
-            Integer replyId = report.getThreadsReply().getId();
-            Integer reportedUserId = report.getThreadsReply().getUserId();
-
-            jdbcTemplate.update(
-                    "UPDATE threads_reply SET is_deleted = 1, deleted_at = NOW() WHERE threads_reply_id = ?",
-                    replyId
-            );
-            // 2) delete_count 증가
-            jdbcTemplate.update(
-                    "UPDATE users SET delete_count = delete_count + 1 WHERE user_id = ?",
-                    reportedUserId
-            );
-
-            // 3) delete_count가 3 이상이면 정지 처리
-            jdbcTemplate.update(
-                    "UPDATE users SET user_status = 'SUSPENDED' WHERE user_id = ? AND delete_count >= 3",
-                    reportedUserId
-            );
         }
 
     }

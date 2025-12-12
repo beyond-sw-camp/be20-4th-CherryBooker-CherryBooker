@@ -10,26 +10,13 @@ import java.util.List;
 public interface ReportQueryRepository extends JpaRepository<Report, Long> {
 
     @Query(value = """
-SELECT r.threads_id
-FROM report r
-JOIN threads t ON r.threads_id = t.threads_id
-WHERE r.status = 'PENDING'
-  AND t.report_count >= 5
-""", nativeQuery = true)
+                    SELECT DISTINCT .threads_id
+                    FROM report r
+                    JOIN threads t ON r.threads_id = t.threads_id
+                    WHERE r.status = 'PENDING'
+                    AND t.report_count >= 5
+            """, nativeQuery = true)
     List<Long> findPendingThreadIdsReportedOverFive();
-
-
-
-    @Query(value = """
-SELECT r.threads_reply_id
-FROM report r
-JOIN threads_reply tr ON r.threads_reply_id = tr.threads_reply_id
-WHERE r.status = 'PENDING'
-  AND tr.report_count >= 5
-""", nativeQuery = true)
-    List<Long> findPendingReplyIdsReportedOverFive();
-
-
 
     // 통계
     // 전체 신고 수

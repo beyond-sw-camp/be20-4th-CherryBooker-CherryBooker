@@ -1,6 +1,5 @@
 package com.cherry.cherrybookerbe.report.query.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
