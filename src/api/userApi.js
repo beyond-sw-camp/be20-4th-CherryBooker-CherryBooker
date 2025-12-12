@@ -1,26 +1,40 @@
-// src/api/userApi.js
-import apiClient from '@/api/httpClient'
+import api from '@/axios';
 
 /**
- * 내 정보 조회
- * GET /api/users/me
- * 응답: ApiResponse<UserDto>
- *  - data: { userId, userEmail, userName, userNickname, userRole, ... }
+ * 내 프로필 조회
+ * @returns {Promise}
  */
-export async function fetchMyInfoApi() {
-    const res = await apiClient.get('/users/me')
-    return res.data.data
-}
+export const getMyProfileApi = async () => {
+    const response = await api.get('/api/users/user/me');
+    return response.data;
+};
 
 /**
- * 알림 서비스나 공통 인증용 /auth/me
- * (현재 authStore.ensureUserId 에서 사용)
- *
- * GET /api/auth/me
- * 응답: ApiResponse<AuthMeDto>
- *  - data: { userId, username, role, ... } 형식이라고 가정
+ * 마이페이지 조회
+ * @returns {Promise}
  */
-export async function fetchNotificationAuthMe() {
-    const res = await apiClient.get('/auth/me')
-    return res.data.data
-}
+export const getMyPageInfoApi = async () => {
+    const response = await api.get('/api/users/user/mypage');
+    return response.data;
+};
+
+/**
+ * 닉네임 수정
+ * @param {string} nickname - 새로운 닉네임
+ * @returns {Promise}
+ */
+export const updateNicknameApi = async (nickname) => {
+    const response = await api.patch('/api/users/user', {
+        nickname: nickname
+    });
+    return response.data;
+};
+
+/**
+ * 회원 탈퇴
+ * @returns {Promise}
+ */
+export const deleteUserApi = async () => {
+    const response = await api.delete('/api/users/user');
+    return response.data;
+};
