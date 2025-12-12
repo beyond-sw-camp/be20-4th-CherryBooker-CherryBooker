@@ -61,9 +61,12 @@ kubectl apply -f k8s/nginx.yaml
 ``` console
 minikube addons enable metrics-server
 ```
-- caution: you should frst apply mariadb and redis first.
 
 ### How to check the pods are well managed?
 ``` console
 kubectl get pods -A
+```
+if crahloop occurs, check
+``` console
+kubectl describe pod {docker container name}
 ```
