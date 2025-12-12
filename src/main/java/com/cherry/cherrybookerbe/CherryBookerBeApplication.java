@@ -37,7 +37,6 @@ public class CherryBookerBeApplication {
                     .userName(adminProps.getName())
                     .userNickname("관리자")
                     .userRole(UserRole.ADMIN)
-                    .loginType(LoginType.GOOGLE)
                     .build();
 
             userRepository.save(admin);
