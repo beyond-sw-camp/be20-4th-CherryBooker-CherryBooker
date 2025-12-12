@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
 
@@ -8,15 +8,34 @@ import NotificationBell from "@/components/notification/NotificationBell.vue";
 import AlertIconSrc from '@/assets/icon/icon-headbar-alert.svg'
 
 import { useAuthStore } from '@/stores/AuthStore'
+import {useNotificationStore} from "@/stores/notificationStore.js";
 
 const route = useRoute()
 const authStore = useAuthStore()
-const { isAuthenticated } = storeToRefs(authStore)   // authStore.isLoggedIn을 반응형으로 가져오기
+const { isAuthenticated } = storeToRefs(authStore)
 
 const showGlobalBell = computed(() => {
   const hideNav = route.meta?.hideNav === true
   return isAuthenticated.value && !hideNav
 })
+
+const notificationStore = useNotificationStore()
+
+watch(
+    () => authStore.isAuthenticated,
+    async (v) => {
+      if (v) {
+        notificationStore.connectSse()
+        await Promise.all([
+          notificationStore.loadNotifications(0),
+          notificationStore.fetchUnreadCount(),
+        ])
+      } else {
+        notificationStore.disconnectSse()
+      }
+    },
+    { immediate: true }
+)
 
 </script>
 
