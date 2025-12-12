@@ -41,7 +41,7 @@ minikube image load cherrybooker-nginx:dev
 2. Apply it as a Kubernetes secret (rerun whenever values change):
    ``` console
    kubectl delete secret backend-secrets --ignore-not-found
-   kubectl create secret generic backend-secrets --from-env-file=.k8s/backend-secrets.env
+   kubectl create secret generic backend-secrets --from-env-file=./k8s/backend-secrets.env
    ```
 
 ### Prepare shared uploads volume (Minikube)
