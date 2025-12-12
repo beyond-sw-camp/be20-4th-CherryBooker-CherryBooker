@@ -49,6 +49,19 @@ const routes = [
         path: "/thread",
         name: "thread",
         component: () => import("@/views/thread/ThreadView.vue"),
+    },
+    {
+        path: "/admin/reports",
+        name: "adminReports",
+        component: () => import("../views/admin/report/AdminReportView.vue"),
+        meta: { adminNav: true }
+    },
+    {
+        path: "/admin/reports/:reportId",
+        name: "adminReportDetail",
+        component: () => import("../views/admin/report/AdminReportDetailView.vue"),
+        props: true,
+        meta: { adminNav: true }
     }
 ];
 
@@ -83,6 +96,11 @@ router.beforeEach(async (to, from, next) => {
         return;
     }
 
+    if (to.path.startsWith('/admin')) {
+        next();
+        return;
+    }
+
     // 3. 로그인하지 않은 상태에서 접근 시 로그인으로
     if (!isLoggedIn) {
         next({
@@ -91,6 +109,7 @@ router.beforeEach(async (to, from, next) => {
         });
         return;
     }
+
 
     // 4. 관리자 페이지 접근 권한 체크 (나중에 admin 페이지 생기면 활성화)
     // if (to.meta.requiresAdmin && !isAdmin) {
