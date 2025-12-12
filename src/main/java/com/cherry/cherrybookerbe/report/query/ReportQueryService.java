@@ -1,12 +1,8 @@
 package com.cherry.cherrybookerbe.report.query;
 
-import com.cherry.cherrybookerbe.community.command.domain.entity.CommunityReply;
-import com.cherry.cherrybookerbe.community.command.domain.entity.CommunityThread;
-import com.cherry.cherrybookerbe.quote.command.entity.Quote;
 import com.cherry.cherrybookerbe.report.domain.ReportStatus;
 import com.cherry.cherrybookerbe.report.query.dto.ReportPendingResponse;
 import com.cherry.cherrybookerbe.report.query.dto.ReportSummaryResponse;
-import com.cherry.cherrybookerbe.user.command.domain.entity.User;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,6 +50,8 @@ public class ReportQueryService {
                     JOIN quote q ON t.quote_id = q.quote_id
                     WHERE rep.status = 'PENDING'
                       AND rep.threads_id = ?
+                    ORDER BY rep.created_at DESC
+                    LIMIT 1
                     """,
 
                     (rs, rowNum) -> new ReportPendingResponse(
@@ -61,7 +59,6 @@ public class ReportQueryService {
                             rs.getLong("reportedUserId"),
                             rs.getString("targetNickname"),
                             rs.getLong("threadId"),
-                          //  null,
                             rs.getInt("reportCount"),
                             0,
                             rs.getTimestamp("createdAt").toLocalDateTime(),
@@ -75,51 +72,9 @@ public class ReportQueryService {
             if (!rows.isEmpty()) result.add(rows.get(0));
         }
 
-        // 2) 댓글 신고
-     /*   List<Long> pendingReplyIds = reportQueryRepository.findPendingReplyIdsReportedOverFive();
 
-        for (Long replyId : pendingReplyIds) {
-
-            List<ReportPendingResponse> rows = jdbcTemplate.query(
-                    """
-                    SELECT
-                       rep.report_id AS reportId,
-                       u.user_id AS reportedUserId,
-                       u.user_nickname AS targetNickname,
-                       r.threads_reply_id AS threadReplyId,
-                       r.report_count AS reportCount,
-                       r.created_at AS createdAt,
-                       q.content AS quoteContent
-                    FROM report rep
-                    JOIN threads_reply r ON rep.threads_reply_id = r.threads_reply_id
-                    JOIN users u ON r.user_id = u.user_id
-                    JOIN quote q ON r.quote_id = q.quote_id
-                    WHERE rep.status = 'PENDING'
-                      AND rep.threads_reply_id = ?
-                    """,
-
-                    (rs, rowNum) -> new ReportPendingResponse(
-                            rs.getLong("reportId"),
-                            rs.getLong("reportedUserId"),
-                            rs.getString("targetNickname"),
-                            null,
-                            rs.getLong("threadReplyId"),
-                            rs.getInt("reportCount"),
-                            0,
-                            rs.getTimestamp("createdAt").toLocalDateTime(),
-                            rs.getString("quoteContent"),
-                            ReportStatus.PENDING,
-                            null
-                    ),
-                    replyId
-            );
-
-            if (!rows.isEmpty()) result.add(rows.get(0));
-        }
-*/
         return result;
     }
-
 
     // 요약
     public ReportSummaryResponse getReportSummary() {
@@ -132,7 +87,6 @@ public class ReportQueryService {
 
         return new ReportSummaryResponse(total, pending, completed);
     }
-
 
     // 상세
     public ReportPendingResponse getReportDetail(Long reportId) {
@@ -150,12 +104,12 @@ public class ReportQueryService {
                     q.content AS quoteContent,
                     rep.status AS status,
                     rep.admin_comment AS adminComment
-                FROM report rep
-                LEFT JOIN threads t ON rep.threads_id = t.threads_id
-                JOIN users u ON u.user_id = t.user_id
-                JOIN quote q ON q.quote_id = t.quote_id
-                WHERE rep.report_id = ?
-                """,
+                    FROM report rep
+                    LEFT JOIN threads t ON rep.threads_id = t.threads_id
+                    LEFT JOIN users u ON u.user_id = t.user_id
+                    LEFT JOIN quote q ON q.quote_id = t.quote_id
+                    WHERE rep.report_id = ?
+                    """,
 
                 (rs, rowNum) -> new ReportPendingResponse(
                         rs.getLong("reportId"),
