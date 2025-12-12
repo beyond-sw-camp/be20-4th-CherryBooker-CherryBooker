@@ -1,0 +1,143 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  labels:
+    app: cherrybooker-backend
+data:
+  SPRING_PROFILES_ACTIVE: local
+  SPRING_DATASOURCE_URL: jdbc:mariadb://cherry-booker-main-db:3336/test
+  SPRING_DATA_REDIS_HOST: redis
+  SPRING_DATA_REDIS_PORT: "6379"
+  JWT_ACCESS_EXP: "500"
+  JWT_REFRESH_EXP: "12000"
+  SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_REDIRECT_URI: http://localhost:8080/login/oauth2/code/kakao
+  SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_AUTHORIZATION_GRANT_TYPE: authorization_code
+  SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_SCOPE: profile_nickname,account_email
+  SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KAKAO_AUTHORIZATION_URI: https://kauth.kakao.com/oauth/authorize
+  SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KAKAO_TOKEN_URI: https://kauth.kakao.com/oauth/token
+  SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KAKAO_USER_INFO_URI: https://kapi.kakao.com/v2/user/me
+  SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KAKAO_USER_NAME_ATTRIBUTE: id
+  SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_NAME: kakao
+  SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_REDIRECT_URI: http://localhost:8080/login/oauth2/code/google
+  SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_SCOPE: profile,email
+  SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_AUTHORIZATION_GRANT_TYPE: authorization_code
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-secrets
+  labels:
+    app: cherrybooker-backend
+type: Opaque
+stringData:
+  SPRING_DATASOURCE_USERNAME: penrose
+  SPRING_DATASOURCE_PASSWORD: valen777
+  JWT_SECRET: XN5O5LI97d5qXryKAu5OrnJfAeNYNczeN4X3gGnH2i0=
+  SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_ID: dummy-kakao-client-id
+  SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KAKAO_CLIENT_SECRET: dummy-kakao-client-secret
+  SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID: dummy-google-client-id
+  SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET: dummy-google-client-secret
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cherrybooker-backend
+  labels:
+    app: cherrybooker-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cherrybooker-backend
+  template:
+    metadata:
+      labels:
+        app: cherrybooker-backend
+    spec:
+      containers:
+        - name: backend
+          image: cherrybooker-backend:dev
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: backend-config
+            - secretRef:
+                name: backend-secrets
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          volumeMounts:
+            - name: uploads
+              mountPath: /app/uploads
+      volumes:
+        - name: uploads
+          persistentVolumeClaim:
+            claimName: backend-uploads-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backend-uploads-pvc
+  labels:
+    app: cherrybooker-backend
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cherrybooker-backend
+  labels:
+    app: cherrybooker-backend
+spec:
+  selector:
+    app: cherrybooker-backend
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cherrybooker-backend-hpa
+  labels:
+    app: cherrybooker-backend
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cherrybooker-backend
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
