@@ -10,7 +10,7 @@ import java.util.List;
 public interface ReportQueryRepository extends JpaRepository<Report, Long> {
 
     @Query(value = """
-                    SELECT DISTINCT .threads_id
+                    SELECT DISTINCT r.threads_id
                     FROM report r
                     JOIN threads t ON r.threads_id = t.threads_id
                     WHERE r.status = 'PENDING'
