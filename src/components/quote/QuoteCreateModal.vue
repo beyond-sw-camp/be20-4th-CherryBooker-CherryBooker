@@ -116,7 +116,7 @@ const loadUserBooks = async () => {
     const payload = parseJwt(token);
     const userId = payload.sub;
 
-    const res = await axios.get("/mylib/books", {
+    const res = await axios.get("/api/mylib/books", {
       params: { userId, page: 0, size: 50 },
       headers: { Authorization: `Bearer ${token}` }
     });
