@@ -7,10 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,14 +16,16 @@ public class UserCommandController {
 
     private final UserCommandServiceImpl userCommandService;
 
-
     @PatchMapping("/users/user")
-    public ResponseEntity<String> updateUserNickName(@AuthenticationPrincipal UserPrincipal principal, @Valid @RequestBody UpdateNicknameRequest request){
-
-
+    public ResponseEntity<String> updateUserNickName(@AuthenticationPrincipal UserPrincipal principal,
+                                                     @Valid @RequestBody UpdateNicknameRequest request){
         userCommandService.updateNickname(principal.userId(), request);
-
         return ResponseEntity.ok("닉네임 변경 성공");
     }
+
+//    @DeleteMapping("/users/user/delete")
+//    public ResponseEntity<String> deleteUser(@AuthenticationPrincipal UserPrincipal principal){
+//
+//    }
 
 }

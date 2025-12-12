@@ -22,7 +22,7 @@ public class User extends BaseTimeEntity {
     private Integer userId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "login_type", nullable = false, length = 20)
+    @Column(name = "login_type", length = 20)
     private LoginType loginType;
 
     @Column(name = "user_name", nullable = false, length = 20)
@@ -45,21 +45,26 @@ public class User extends BaseTimeEntity {
     @Column(name = "user_role", nullable = false, length = 20)
     private UserRole userRole;
 
+    @Column(name = "delete_count", nullable = false)
+    private Integer deleteCount;
+
     @Builder
     private User(LoginType loginType,
                  String userName,
                  String userEmail,
                  String userPassword,
-                 String userNickname) {
+                 String userNickname,
+                 UserRole userRole) {
         this.loginType = loginType;
         this.userName = userName;
         this.userEmail = userEmail;
         this.userPassword = userPassword;
         this.userNickname = userNickname;
+        this.deleteCount = 0;      //기본값 0
 
         // 생성 시 기본 상태
         this.userStatus = UserStatus.NORMAL;
-        this.userRole = UserRole.USER;
+        this.userRole = (userRole != null) ? userRole : UserRole.USER;
     }
 
     // 닉네임 변경 메소드

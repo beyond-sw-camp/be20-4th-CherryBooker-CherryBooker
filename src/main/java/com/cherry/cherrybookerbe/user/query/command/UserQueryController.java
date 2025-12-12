@@ -2,7 +2,6 @@ package com.cherry.cherrybookerbe.user.query.command;
 
 import com.cherry.cherrybookerbe.common.security.auth.UserPrincipal;
 import com.cherry.cherrybookerbe.user.query.dto.reponse.MypageResponse;
-import com.cherry.cherrybookerbe.user.query.dto.reponse.UserListResponse;
 import com.cherry.cherrybookerbe.user.query.service.UserQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserQueryController {
 
     private final UserQueryService userQueryService;
-
-
-    // Todo (관리자)전체 유저 조회
-
 
     //마이페이지 조회
     @GetMapping("/me")

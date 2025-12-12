@@ -5,7 +5,6 @@ import com.cherry.cherrybookerbe.user.command.domain.entity.UserStatus;
 import com.cherry.cherrybookerbe.user.command.dto.request.UpdateNicknameRequest;
 import com.cherry.cherrybookerbe.user.command.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserCommandServiceImpl implements UserCommandService {
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     @Override
@@ -26,6 +25,6 @@ public class UserCommandServiceImpl implements UserCommandService {
             throw new IllegalArgumentException("탈퇴한 회원입니다.");
         }
 
-        user.updateNickName(request.getNickkname());
+        user.updateNickName(request.getNickname());
     }
 }
