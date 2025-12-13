@@ -1,3 +1,4 @@
+<!-- src/components/thread/CommentItem.vue -->
 <template>
   <div class="comment-wrapper">
     <div class="comment-header">
