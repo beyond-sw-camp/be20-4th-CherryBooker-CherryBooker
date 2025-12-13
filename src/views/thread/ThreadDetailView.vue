@@ -72,7 +72,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/authStore'
+import { useAuthStore } from '@/stores/AuthStore'
 import { fetchThreadDetail, deleteThread, deleteReply } from '@/api/threadApi'
 import ThreadCreateModal from '@/components/thread/ThreadCreateModal.vue'
 
