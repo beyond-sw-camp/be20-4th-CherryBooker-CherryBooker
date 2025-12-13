@@ -175,7 +175,7 @@ const requestOCR = async () => {
   try {
     isOcrLoading.value = true;
 
-    const res = await axios.post("http://localhost:8000/ocr", formData, {
+    const res = await axios.post("/api/ocr", formData, {
       headers: { "Content-Type": "multipart/form-data" }
     });
 
