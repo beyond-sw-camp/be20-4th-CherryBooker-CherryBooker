@@ -20,6 +20,9 @@ docker build -f nginx/Dockerfile -t cherrybooker-nginx:dev .
 ### How to manage the cluseter?
 - Install minikube, the lightweight cluster mangaement service
 - enter minikube start.
+``` console
+minikube start
+```
 - Then, do the following.
 ``` console
 minikube image load cherrybooker-mariadb
@@ -70,4 +73,14 @@ kubectl get pods -A
 if any crashloop occurs, check
 ``` console
 kubectl describe pod {docker container name}
+```
+
+### How to delete currently running pods from namespace
+- to delete cherrybooker-backend, for instance, will be like...
+``` console
+kubectl delete deployment cherrybooker-backend
+```
+- Then, stop minikube by
+``` console
+minikube stop
 ```
