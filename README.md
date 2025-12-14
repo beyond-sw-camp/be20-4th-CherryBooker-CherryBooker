@@ -1,3 +1,3 @@
 # CherryBooker-BE
 
-Jenkins test
+Jenkins 테스트
