@@ -76,6 +76,7 @@
       :show="showDetailModal"
       :book="selectedBook"
       @close="showDetailModal = false"
+      @status-updated="handleBookStatusUpdate"
     />
   </div>
 </template>
@@ -205,6 +206,18 @@ const handleBookAdded = () => {
 const openBookDetail = (book) => {
   selectedBook.value = book;
   showDetailModal.value = true;
+};
+
+const handleBookStatusUpdate = ({ myLibId, status }) => {
+  if (!myLibId || !status) return;
+
+  books.value = books.value.map((item) =>
+      item.myLibId === myLibId ? { ...item, status } : item
+  );
+
+  if (selectedBook.value?.myLibId === myLibId) {
+    selectedBook.value = { ...selectedBook.value, status };
+  }
 };
 
 const markAsRead = async (book) => {

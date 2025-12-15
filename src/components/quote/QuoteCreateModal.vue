@@ -143,7 +143,8 @@ const loadUserBooks = async () => {
       userBookId: item.myLibId,
       bookTitle: item.title,
       author: item.author,
-      coverImageUrl: item.coverImageUrl
+      coverImageUrl: item.coverImageUrl,
+      status: item.status
     }));
   } catch (e) {
     console.error("도서 목록 불러오기 실패", e);
@@ -163,6 +164,40 @@ const handleImageUpload = (e) => {
     previewImage.value = reader.result;
   };
   reader.readAsDataURL(file);
+};
+
+const ensureBookReadingStatus = async (userBookId, token) => {
+  if (!userBookId || !token) return;
+
+  const targetBook = books.value.find((book) => book.userBookId === userBookId);
+  const status = targetBook?.status;
+
+  if (!targetBook || status === "READING" || status === "READ") {
+    return;
+  }
+  if (status !== "WISH") {
+    return;
+  }
+
+  try {
+    await axios.patch(
+        `/api/mylib/books/${userBookId}/status`,
+        {
+          targetStatus: "READING",
+          trigger: "QUOTE_CAPTURE"
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        }
+    );
+
+    targetBook.status = "READING";
+  } catch (error) {
+    console.error("책 상태 변경 실패", error);
+  }
 };
 
 // 3) OCR 요청 (FastAPI 또는 PaddleOCR 서버)
@@ -255,6 +290,8 @@ const submitQuote = async () => {
         "Content-Type": "application/json"
       }
     });
+
+    await ensureBookReadingStatus(selectedBookId.value, token);
 
     alert("글귀가 등록되었습니다!");
     emit("created");
