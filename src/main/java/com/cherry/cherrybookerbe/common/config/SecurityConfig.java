@@ -58,6 +58,12 @@ public class SecurityConfig {
                         // Kubernetes health check를 위한 설정
                         .requestMatchers("/actuator/health/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // Swagger 문서 접근 허용
+                        .requestMatchers(
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
+                        ).permitAll()
                         .requestMatchers(
                                 "/", "/error", "/favicon.ico",
                                 "/login/**",
