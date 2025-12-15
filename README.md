@@ -134,7 +134,7 @@ OCR 기술을 통해 텍스트가 자동으로 추출·저장되며,
 <img width="770" height="600" alt="image" src="https://github.com/user-attachments/assets/11abac75-ddcf-47f7-9592-0802a5333db0" />
 
 ## 🐋 Docker 및 Kubernetes 시연
-- (https://drive.google.com/drive/folders/1LigHXzHGTJ4yeyiKumNCRqDwJnsBBGNy?usp=sharing)
+비디오 링크: https://drive.google.com/drive/folders/1LigHXzHGTJ4yeyiKumNCRqDwJnsBBGNy?usp=sharing
 
 - 프로젝트에서는 Docker 및 Kubernetes 환경에서 애플리케이션이 정상적으로 배포·동작하는 과정을 단계별로 시연
 ### 🔧 시연 흐름
