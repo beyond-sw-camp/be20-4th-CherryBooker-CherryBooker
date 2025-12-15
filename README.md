@@ -27,7 +27,7 @@ OCR 기술을 통해 텍스트가 자동으로 추출·저장되며,
 
 | 김명진 | 김동리 | 김현수 | 박연수 | 배창민 |
 |:--:|:--:|:--:|:--:|:--:|
-| <img src="hhttps://github.com/user-attachments/assets/73878a63-ca64-4772-88f0-838d4a6c93e2" width="150"> | <img src="hhttps://github.com/user-attachments/assets/73878a63-ca64-4772-88f0-838d4a6c93e2" width="150"> | <img src="https://github.com/user-attachments/assets/73878a63-ca64-4772-88f0-838d4a6c93e2" width="150"> | <img src="https://github.com/user-attachments/assets/73878a63-ca64-4772-88f0-838d4a6c93e2" width="150"> | <img src="https://github.com/user-attachments/assets/73878a63-ca64-4772-88f0-838d4a6c93e2" width="150"> |
+| <img src="https://github.com/user-attachments/assets/73878a63-ca64-4772-88f0-838d4a6c93e2" width="150"> | <img src="https://github.com/user-attachments/assets/73878a63-ca64-4772-88f0-838d4a6c93e2" width="150"> | <img src="https://github.com/user-attachments/assets/73878a63-ca64-4772-88f0-838d4a6c93e2" width="150"> | <img src="https://github.com/user-attachments/assets/73878a63-ca64-4772-88f0-838d4a6c93e2" width="150"> | <img src="https://github.com/user-attachments/assets/73878a63-ca64-4772-88f0-838d4a6c93e2" width="150"> |
 
 </div>
 
