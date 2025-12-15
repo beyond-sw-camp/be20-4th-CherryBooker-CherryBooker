@@ -21,6 +21,8 @@ public interface CommunityThreadRepository extends JpaRepository<CommunityThread
     // 페이징용
     Page<CommunityThread> findByDeletedFalseAndParentIsNull(Pageable pageable);
 
+    Page<CommunityThread> findByUserIdAndDeletedFalseAndParentIsNull(Integer userId, Pageable pageable);
+
     /* 마이페이지 조회 시 사용 */
     @Query("SELECT COUNT(ct) FROM CommunityThread ct " +
             "WHERE ct.userId = :userId AND ct.deleted = false")

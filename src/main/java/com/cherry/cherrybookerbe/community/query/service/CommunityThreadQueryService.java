@@ -137,6 +137,61 @@ public class CommunityThreadQueryService {
         return mapThreadDetail(thread, nickname, threadContent, replies);
     }
 
+    /** [추가] 내가 올린 스레드 목록 조회 (루트 글만, 페이징) */
+    public CommunityThreadListResponse getMyThreadList(Integer userId, int page, int size) {
+
+        if (userId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "userId is required");
+        }
+
+        int pageIndex = Math.max(page, 0);
+        int pageSize = size <= 0 ? 10 : size;
+
+        Pageable pageable = PageRequest.of(
+                pageIndex,
+                pageSize,
+                Sort.by(Sort.Direction.DESC, "createdAt")
+        );
+
+        Page<CommunityThread> threadPage =
+                communityThreadRepository.findByUserIdAndDeletedFalseAndParentIsNull(userId, pageable);
+
+        List<CommunityThread> threads = threadPage.getContent();
+
+        // quoteId 모아서 조회
+        List<Long> quoteIds = threads.stream()
+                .map(CommunityThread::getQuoteId)
+                .map(Integer::longValue)
+                .distinct()
+                .toList();
+
+        Map<Long, Quote> quoteMap = quoteRepository.findAllById(quoteIds)
+                .stream()
+                .collect(Collectors.toMap(Quote::getQuoteId, q -> q));
+
+        // 작성자 userId 모아서 조회
+        List<Integer> userIds = threads.stream()
+                .map(CommunityThread::getUserId)
+                .distinct()
+                .toList();
+
+        Map<Integer, User> userMap = userRepository.findAllById(userIds)
+                .stream()
+                .collect(Collectors.toMap(User::getUserId, u -> u));
+
+        List<CommunityThreadSummaryResponse> summaries = threads.stream()
+                .map(thread -> mapThreadSummary(thread, quoteMap, userMap))
+                .toList();
+
+        Pagination pagination = Pagination.builder()
+                .currentPage(threadPage.getNumber())
+                .totalPages(threadPage.getTotalPages())
+                .totalItems(threadPage.getTotalElements())
+                .build();
+
+        return new CommunityThreadListResponse(summaries, pagination);
+    }
+
 
     /* ====== 내부 헬퍼 메서드들 ====== */
 
