@@ -69,12 +69,16 @@ OCR 기술을 통해 텍스트가 자동으로 추출·저장되며,
 
 ### Frontend
 ![Vue](https://img.shields.io/badge/Vue-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)
+![Chart.js](https://img.shields.io/badge/Chart.js-FF6384?style=for-the-badge&logo=chart.js&logoColor=white)
+![Pinia](https://img.shields.io/badge/Pinia-FFD859?style=for-the-badge&logo=pinia&logoColor=black)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
 
 ### Backend
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
 ![Spring Security](https://img.shields.io/badge/Spring_Security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white)
 ![JPA](https://img.shields.io/badge/JPA-59666C?style=for-the-badge)
 ![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
 
 ### Database
 ![MariaDB](https://img.shields.io/badge/MariaDB-003545?style=for-the-badge&logo=mariadb&logoColor=white)
@@ -85,9 +89,9 @@ OCR 기술을 통해 텍스트가 자동으로 추출·저장되며,
 ### Infra & DevOps
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)
+![Minikube](https://img.shields.io/badge/Minikube-FF6D00?style=for-the-badge&logo=kubernetes&logoColor=white)
 ![Jenkins](https://img.shields.io/badge/Jenkins-D24939?style=for-the-badge&logo=jenkins&logoColor=white)
 ![Nginx](https://img.shields.io/badge/Nginx_Ingress-009639?style=for-the-badge&logo=nginx&logoColor=white)
-![Grafana](https://img.shields.io/badge/Grafana-F46800?style=for-the-badge&logo=grafana&logoColor=white)
 
 ---
 
@@ -182,9 +186,170 @@ kubectl logs -l app=cherry-booker --follow
 - 요청 로그 상에서 Pod replica ID가 번갈아 출력됨을 확인
 - 이를 통해 Kubernetes Service가 다중 Pod 환경에서 Round-Robin 기반 로드밸런싱을 정상적으로 수행함을 검증
 
-
-## 🚩 젠킨스 동작 테스트
+## 🚀 CI/CD 파이프라인 구성
 ![cicd](https://github.com/user-attachments/assets/172f94e4-3896-4b32-a2e1-a491e10aba91)
+
+프로젝트는 **Jenkins + Argo CD** 기반의 CI/CD 파이프라인을 사용
+
+- **CI (Jenkins)**  
+  소스 코드 빌드, 테스트, Docker 이미지 빌드 및 Docker Hub 푸시
+- **CD (Argo CD)**  
+  GitOps 방식으로 Kubernetes 배포 자동화
+
+---
+
+### 1️⃣ Jenkins 연결 테스트 파이프라인
+
+Jenkins, Gradle, Docker, Git 환경이 정상적으로 연결되었는지 확인하기 위한 기본 CI 테스트용 파이프라인
+
+<details> <summary><strong>Jenkins Pipeline – Connection Test</strong></summary>
+
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+        skipDefaultCheckout(true)
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '20'))
+    }
+
+    tools {
+        gradle 'gradle'
+        jdk 'openJDK21'
+    }
+
+    environment {
+        GITHUB_URL  = 'https://github.com/ChAnGMiNBae/CherryBooker-BE-DevOps.git'
+        GRADLE_ARGS = '--no-daemon --stacktrace'
+    }
+
+    stages {
+
+        stage('Preparation') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'java -version'
+                        sh 'gradle -v || true'
+                        sh 'docker --version'
+                        sh 'git --version'
+                    } else {
+                        bat 'java -version'
+                        bat 'gradle -v'
+                        bat 'docker --version'
+                        bat 'git --version'
+                    }
+                }
+            }
+        }
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: env.GITHUB_URL
+            }
+        }
+
+        stage('Build Test') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'chmod +x ./gradlew'
+                        sh "./gradlew clean build -x test ${env.GRADLE_ARGS}"
+                    } else {
+                        bat "gradlew.bat clean build -x test %GRADLE_ARGS%"
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Jenkins connection test pipeline succeeded.'
+        }
+        failure {
+            echo 'Jenkins connection test pipeline failed.'
+        }
+    }
+}
+</details>
+
+### 2️⃣ CI 파이프라인 (Jenkins → Argo CD 연계)
+
+Jenkins에서 실제 CI를 수행하며
+빌드 결과 Docker 이미지를 Docker Hub에 푸시
+Argo CD는 이미지 태그 변경을 감지하여 Kubernetes 배포를 자동 수행
+
+<details> <summary><strong>Jenkins CI Pipeline – Docker Build & Push</strong></summary>
+pipeline {
+    agent any
+
+    options {
+        timestamps()
+        skipDefaultCheckout(true)
+        disableConcurrentBuilds()
+        buildDiscarder(logRotator(numToKeepStr: '20'))
+    }
+
+    tools {
+        gradle 'gradle'
+        jdk 'openJDK21'
+    }
+
+    parameters {
+        booleanParam(name: 'SKIP_TESTS', defaultValue: true)
+        booleanParam(name: 'ALLOW_TEST_FAILURE', defaultValue: true)
+        string(name: 'GIT_BRANCH', defaultValue: 'main')
+        string(name: 'IMAGE_NAME', defaultValue: 'test-pipe')
+    }
+
+    environment {
+        DOCKERHUB = credentials('DOCKERHUB_PASSWORD')
+        GITHUB_URL  = 'https://github.com/ChAnGMiNBae/CherryBooker-BE-DevOps.git'
+        GRADLE_ARGS = '--no-daemon --stacktrace'
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: params.GIT_BRANCH, url: env.GITHUB_URL
+
+                script {
+                    env.GIT_SHORT = sh(
+                        script: 'git rev-parse --short HEAD',
+                        returnStdout: true
+                    ).trim()
+
+                    env.IMAGE = "${env.DOCKERHUB_USR}/${params.IMAGE_NAME}:${env.BUILD_NUMBER}-${env.GIT_SHORT}"
+                }
+            }
+        }
+
+        stage('Build & Docker Push') {
+            steps {
+                sh "./gradlew clean build -x test ${env.GRADLE_ARGS}"
+                sh "docker build -t ${env.IMAGE} ."
+                sh 'echo "$DOCKERHUB_PSW" | docker login -u "$DOCKERHUB_USR" --password-stdin'
+                sh "docker push ${env.IMAGE}"
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "CI pipeline succeeded: ${env.IMAGE}"
+        }
+        unstable {
+            echo "CI pipeline unstable (tests failed): ${env.IMAGE}"
+        }
+        failure {
+            echo "CI pipeline failed"
+        }
+    }
+}
+</details>
 
 
 
@@ -193,6 +358,12 @@ kubectl logs -l app=cherry-booker --follow
 |----------|------|
 | 김동리 | ㅇㅇ |
 | 김명진 | ㅇㅇ |
-| 김현수 | ㅇㅇ |
+| 김현수 | 회고하며 크게 세 가지 아쉬움이 남는다.
+
+첫째, 시간적 제약으로 인해 Ingress Load Balancer를 더 상세하게 공부하고 적용하지 못한 것이 아쉬웠다.
+
+둘째, 학부 시절 수강한 데이터 네트워크 과목이 전부였던 탓에 컴퓨터 네트워크 전반에 대한 이해가 부족하다는 한계가 점점 더 분명해지고 있다. 실제 시스템을 설계하고 운영하는 과정에서 네트워크 지식의 부재가 장애 요인으로 작용했으며, 이를 계기로 컴퓨터 네트워크에 대한 체계적인 학습이 필요하다는 것을 느꼈다.
+
+셋째, MSA 구축 과정에서 충분한 기여를 하지 못했다는 아쉬움이 있다. 이는 도메인 주도 개발 과정에서 DDD를 사실상 건너뛴 영향이 컸다고 생각한다. DDD를 통해 각 도메인을 명확히 정의하고, 팀원별 역할과 책임을 분리했더라면 MSA를 위한 도메인 분리의 기초를 더 탄탄히 다질 수 있었을 것이다.  |
 | 박연수 | ㅇㅇ |
 | 배창민 | ㅇㅇ |
