@@ -129,8 +129,28 @@ OCR 기술을 통해 텍스트가 자동으로 추출·저장되며,
 <img width="887" height="620" alt="image" src="https://github.com/user-attachments/assets/0c59f176-a542-4e36-b8c5-42ae9cca8738" />
 
 
-## 🐋 CI/CD 시연
+## 🐋 Docker 및 Kubernetes 시연
 ![kubernetes_docker](https://github.com/user-attachments/assets/0c9c8804-769d-42ff-8fde-ba16740dfaa9)
+- 프로젝트에서는 Docker 및 Kubernetes 환경에서 애플리케이션이 정상적으로 배포·동작하는 과정을 단계별로 시연
+### 🔧 시연 흐름
+
+1. Dockerfile 기반 이미지 빌드
+   - Backend 애플리케이션을 Dockerfile로 이미지 빌드
+2. Kubernetes Pod 실행 확인
+   - 빌드된 이미지를 기반으로 Pod 생성
+   - ```kubectl get pods```를 통해 정상 실행 상태 확인
+3. Nginx Gateway 구성
+   - Nginx를 Gateway로 사용하여 외부 요청을 Backend로 라우팅
+   - Kubernetes Service를 통해 Pod와 연결
+4. 포트 포워딩 설정
+   - Nginx Gateway 및 Backend Service에 대해 ```kubectl port-forward``` 적용
+5. 로컬 환경 접속 및 동작 검증
+   - 로컬 브라우저/클라이언트에서 접속하여 API 정상 동작 확인
+
+### ✅ 검증 결과
+- Docker 이미지 기반으로 Pod가 정상 실행됨을 확인
+- Nginx Gateway를 통해 Backend API로 요청이 정상 전달됨
+- 로컬 환경에서 포트 포워딩을 통해 서비스 동작을 직접 검증
 
 ## 🔁 Kubernetes Service 로드밸런싱 검증 (Round-Robin)
 ![kubernetes_docker2](https://github.com/user-attachments/assets/7bcb8da8-e123-47d0-83ae-e7fa6ff1e4b9)
