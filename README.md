@@ -83,8 +83,8 @@ OCR 기술을 통해 텍스트가 자동으로 추출·저장되며,
 </details> 
 <details> 
 	<summary><b>📚 개인 서재 관리</b></summary> 
-	<h4>스레드 목록 조회</h4>
-	![Screen Recording 2025-12-15 at 6 23 08 PM (1)](https://github.com/user-attachments/assets/40f909e6-3cfd-4790-9331-2f0e51a01c81)
+	<h4>나의 서재 기능>나의>h
+	![Screen Recording 2025-12-15 at 6 23 08 PM (1)](https://github.com/user-attachments/assets/3cf0cfa7-e9ca-474d-b335-e140986f0df9)
 
 </details> 
 
