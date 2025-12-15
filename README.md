@@ -1,7 +1,15 @@
+
 ### Basic SW Arhitecture for this project
 <img width="754" height="533" alt="image" src="https://github.com/user-attachments/assets/d2708d20-34e1-442a-8135-f691ddd4208b" />
 
+### Experiments (1) 
+- Kubernetes pods are running without issues
+![쿠버네티스_시연_영상](https://github.com/user-attachments/assets/12d55c6c-d072-4ce7-a2d9-e8d4673bfeca)
 
+
+### Experiemnts (2)
+- Kubernetes pods are being selected in round-robin manner
+![kuberneteds pods being round-robin](https://github.com/user-attachments/assets/c35ea72a-0189-42bb-a16e-7af2d36d5527)
 
 
 
