@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Sql(scripts = "/dummy_mylib.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-class BookStateControllerIntegrationTest {
+class BookStateControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -62,7 +62,7 @@ class BookStateControllerIntegrationTest {
         given(libraryOpenApiClient.search("초보자를 위한 Java 200제", "9788956747859"))
                 .willReturn(SAMPLE_BOOK);
 
-        MvcResult registerResult = mockMvc.perform(post("/mylib/register-books")
+        MvcResult registerResult = mockMvc.perform(post("/api/mylib/register-books")
                         .with(csrf())
                         .with(user(TEST_PRINCIPAL))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -80,7 +80,7 @@ class BookStateControllerIntegrationTest {
         JsonNode registeredPayload = objectMapper.readTree(registerResult.getResponse().getContentAsString());
         long myLibId = registeredPayload.get("data").get("myLibId").asLong();
 
-        mockMvc.perform(patch("/mylib/books/{myLibId}/status", myLibId)
+        mockMvc.perform(patch("/api/mylib/books/{myLibId}/status", myLibId)
                         .with(csrf())
                         .with(user(TEST_PRINCIPAL))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -95,7 +95,7 @@ class BookStateControllerIntegrationTest {
                 .andExpect(jsonPath("$.data.currentStatus").value("READING"))
                 .andExpect(jsonPath("$.data.badgeIssued").value(false));
 
-        mockMvc.perform(patch("/mylib/books/{myLibId}/status", myLibId)
+        mockMvc.perform(patch("/api/mylib/books/{myLibId}/status", myLibId)
                         .with(csrf())
                         .with(user(TEST_PRINCIPAL))
                         .contentType(MediaType.APPLICATION_JSON)
