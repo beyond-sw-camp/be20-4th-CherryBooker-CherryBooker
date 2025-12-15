@@ -24,6 +24,11 @@ public class ReportQueryService {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    //
+    public List<ReportPendingResponse> getPendingReportsForAdmin() {
+        return getReportsForAdmin(ReportStatus.PENDING);
+    }
+
 
     //  관리자 신고 목록 조회
     public List<ReportPendingResponse> getReportsForAdmin(ReportStatus status) {

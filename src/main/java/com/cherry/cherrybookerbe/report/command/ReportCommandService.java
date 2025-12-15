@@ -20,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ReportCommandService {
 
+    private static final int REPORT_THRESHOLD = 5;
+
     private final ReportCommandRepository reportCommandRepository;
     private final JdbcTemplate jdbcTemplate;
 
@@ -62,6 +64,7 @@ public class ReportCommandService {
         return em.getReference(CommunityThread.class, threadId);
     }
 
+
     // 신고 등록
     public void create(CreateReportRequest createRequest) {
         Long reporterId =  createRequest.getReporterId(); // TODO: 타입 맞는지 확인 필요
@@ -78,6 +81,24 @@ public class ReportCommandService {
 
         if(threadId !=null) {
             reportedThread = findCommunityThreadById(threadId);
+        }
+
+        // 중복 신고 방지
+        Integer alreadyReported = jdbcTemplate.queryForObject(
+                """
+                SELECT COUNT(*)
+                FROM report
+                WHERE user_id = ?
+                  AND threads_id = ?
+                  AND status = 'PENDING'
+                """,
+                Integer.class,
+                reporterId,
+                threadId
+        );
+
+        if (alreadyReported != null && alreadyReported > 0) {
+            throw new IllegalStateException("이미 신고한 게시글입니다.");
         }
 
         // 게시글  신고 등록
@@ -117,18 +138,20 @@ public class ReportCommandService {
         }
         Integer threadId = reportedThread.getId();
 
+        // ⭕ 수정
         jdbcTemplate.update(
                 """
                 UPDATE report
                 SET status = ?,
                     admin_comment = ?
-                WHERE threads_id = ?
+                WHERE report_id = ?
                   AND status = 'PENDING'
                 """,
                 status.name(),
                 adminComment,
-                threadId
+                reportId
         );
+
 
         //신고 받은 게시글 상태 변경(삭제 or 반려)
 

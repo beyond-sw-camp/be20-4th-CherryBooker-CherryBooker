@@ -32,13 +32,12 @@ public class ReportController {
     // 신고 목록 조회 (5회 이상 신고 받은 게시물
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ApiResponse<List<ReportPendingResponse>> getReportsForAdmin(
-            @RequestParam(defaultValue = "PENDING") ReportStatus status
-    ) {
+    public ApiResponse<List<ReportPendingResponse>> getReportsForAdmin() {
         return ApiResponse.success(
-                reportQueryService.getReportsForAdmin(status)
+                reportQueryService.getPendingReportsForAdmin()
         );
     }
+
 
     //  신고 상세 조회
     @PreAuthorize("hasRole('ADMIN')")
