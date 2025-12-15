@@ -27,3 +27,6 @@ eureka:
     fetch-registry: true
     service-url:
       defaultZone: http://localhost:8761/eureka
+
+ocr:
+  base-url: ${OCR_BASE_URL:http://localhost:8000/ocr}
