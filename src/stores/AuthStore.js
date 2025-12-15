@@ -202,6 +202,7 @@ export const useAuthStore = defineStore('auth', () => {
             }
 
             setAccessToken(data.accessToken);
+            localStorage.setItem('refreshToken', data.refreshToken);
             setUserFromToken(data.accessToken);
 
             return true;

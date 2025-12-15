@@ -25,6 +25,18 @@ export async function fetchThreadDetail(threadId) {
 }
 
 /**
+ * 내 스레드 목록 조회 (루트만)
+ * GET /api/community/threads/me?page=&size=
+ * 응답: ApiResponse<CommunityThreadListResponse>
+ */
+export async function fetchMyThreads({ page = 0, size = 4 } = {}) {
+    const res = await apiClient.get('/community/threads/me', {
+        params: { page, size },
+    })
+    return res.data.data
+}
+
+/**
  * 스레드 생성
  * POST /api/community/threads
  * body 예시: { quoteId: number }

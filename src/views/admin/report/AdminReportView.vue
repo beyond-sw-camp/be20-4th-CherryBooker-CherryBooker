@@ -1,75 +1,78 @@
 <template>
   <div class="admin-container">
-    <h2 class="title">🚨 신고 관리</h2>
+    <!-- ✅ 내부 폭 제한 + 가운데정렬 래퍼 추가 -->
+    <div class="admin-inner">
+      <h2 class="title">🚨 신고 관리</h2>
 
-    <!-- 상단 통계 -->
-    <div class="summary-box">
-      <div class="summary-card">
-        <p>전체 신고 수</p>
-        <span class="blue">{{ summary.totalCount }}</span>
+      <!-- 상단 통계 -->
+      <div class="summary-box">
+        <div class="summary-card">
+          <p>전체 신고 수</p>
+          <span class="blue">{{ summary.totalCount }}</span>
+        </div>
+
+        <div class="summary-card">
+          <p>처리 완료 신고 수</p>
+          <span class="green">{{ summary.completedCount }}</span>
+        </div>
+
+        <div class="summary-card">
+          <p>미처리 신고 수</p>
+          <span class="red">{{ summary.pendingCount }}</span>
+        </div>
       </div>
 
-      <div class="summary-card">
-        <p>처리 완료 신고 수</p>
-        <span class="green">{{ summary.completedCount }}</span>
-      </div>
+      <!-- 테이블 -->
+      <div class="table-box">
+        <div class="table-header">
+          <span></span>
 
-      <div class="summary-card">
-        <p>미처리 신고 수</p>
-        <span class="red">{{ summary.pendingCount }}</span>
-      </div>
-    </div>
+          <!-- 상태 필터 -->
+          <select v-model="filterStatus">
+            <option value="PENDING">대기중</option>
+            <option value="REJECTED">반려</option>
+            <option value="VALID">승인</option>
+          </select>
+        </div>
 
-    <!-- 테이블 -->
-    <div class="table-box">
-      <div class="table-header">
-        <span></span>
+        <table class="report-table">
+          <thead>
+          <tr>
+            <th>번호</th>
+            <th>신고 글귀</th>
+            <th>등록 일자</th>
+            <th>처리 상태</th>
+          </tr>
+          </thead>
 
-        <!-- 상태 필터 (PENDING만) -->
-        <select v-model="filterStatus">
-          <option value="PENDING">대기중</option>
-          <option value="REJECTED">반려</option>
-          <option value="VALID">승인</option>
-        </select>
-      </div>
+          <tbody>
+          <tr
+              v-for="(report, index) in paginatedList"
+              :key="index"
+              @click="goDetail(report.reportId)"
+              class="click-row"
+          >
+            <td>{{ (currentPage - 1) * pageSize + index + 1 }}</td>
+            <td class="ellipsis">{{ report.quoteContent }}</td>
+            <td>{{ formatDate(report.createdAt) }}</td>
+            <td :class="statusClass(report.status)">
+              {{ statusText(report.status) }}
+            </td>
+          </tr>
+          </tbody>
+        </table>
 
-      <table class="report-table">
-        <thead>
-        <tr>
-          <th>번호</th>
-          <th>신고 글귀</th>
-          <th>등록 일자</th>
-          <th>처리 상태</th>
-        </tr>
-        </thead>
-
-        <tbody>
-        <tr
-            v-for="(report, index) in paginatedList"
-            :key="index"
-            @click="goDetail(report.reportId)"
-            class="click-row"
-        >
-        <td>{{ (currentPage - 1) * pageSize + index + 1 }}</td>
-          <td class="ellipsis">{{ report.quoteContent }}</td>
-          <td>{{ formatDate(report.createdAt) }}</td>
-          <td :class="statusClass(report.status)">
-            {{ statusText(report.status) }}
-          </td>
-        </tr>
-        </tbody>
-      </table>
-
-      <!-- 페이지네이션 -->
-      <div class="pagination">
-        <button
-            v-for="page in totalPages"
-            :key="page"
-            @click="movePage(page)"
-            :class="{ active: currentPage === page }"
-        >
-          {{ page }}
-        </button>
+        <!-- 페이지네이션 -->
+        <div class="pagination">
+          <button
+              v-for="page in totalPages"
+              :key="page"
+              @click="movePage(page)"
+              :class="{ active: currentPage === page }"
+          >
+            {{ page }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -179,9 +182,18 @@ const formatDate = (date) => {
 
 <style scoped>
 .admin-container {
-  padding: 40px;
   background: #fff7e6;
   min-height: 100vh;
+  padding: 48px 0;
+
+  display: flex;
+  justify-content: center;
+}
+
+.admin-inner {
+  width: 100%;
+  max-width: 980px;
+  padding: 0 24px;
 }
 
 .title {
@@ -194,6 +206,7 @@ const formatDate = (date) => {
   display: flex;
   gap: 20px;
   margin-bottom: 30px;
+  flex-wrap: wrap;
 }
 
 .summary-card {
@@ -225,6 +238,7 @@ const formatDate = (date) => {
   border-radius: 24px;
   padding: 25px;
   border: 2px solid #f1b76a;
+  width: 100%;
 }
 
 .table-header {
@@ -269,6 +283,7 @@ const formatDate = (date) => {
   display: flex;
   justify-content: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .pagination button {
