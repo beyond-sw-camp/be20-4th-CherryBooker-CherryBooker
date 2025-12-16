@@ -89,15 +89,11 @@ OCR 기술을 통해 텍스트가 자동으로 추출·저장되며,
 </details> 
 
 <details> 
-	<summary><b>📸 OCR 기반 구절 추출</b></summary> 
+	<summary><b>📸 OCR 기반 구절 추출 및 글귀 등록</b></summary> 
 	<h4>글귀 등록</h4>
 	<img src="./product/gif/글귀등록.gif" width="80%"/>
 	<h4>글귀 수정/삭제</h4>
 	<img src="./product/gif/글귀수정삭제.gif" width="80%"/>
-</details> 
-<details> 
-	<summary><b>📝 글귀 아카이브 & 메모</b></summary> 
-	<br>
 </details> 
 
 <details> 
