@@ -29,7 +29,7 @@
             <button @click="goToProfile" class="action-btn">
               🔔 내 프로필 보기
             </button>
-            <button @click="goToMyLibrary" class="action-btn">
+            <button @click="goToMyThread" class="action-btn">
               📚 내 스레드 보기
             </button>
           </div>
@@ -300,8 +300,8 @@ const goToProfile = () => {
   router.push('/mypage/profile')
 }
 
-const goToMyLibrary = () => {
-  router.push('/library')
+const goToMyThread = () => {
+  router.push('/mypage/threads')
 }
 
 onMounted(() => {

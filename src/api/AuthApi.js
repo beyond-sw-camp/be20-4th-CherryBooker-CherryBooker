@@ -17,7 +17,7 @@ export const redirectToSocialLogin = (provider) => {
  * @returns {Promise}
  */
 export const adminLoginApi = async (email, password) => {
-    const response = await api.post('/auth/admin/login', { email, password });
+    const response = await api.post('/admin/login', { email, password }); // ✅ 변경
     return response;
 };
 
@@ -35,7 +35,7 @@ export const refreshTokenApi = async () => {
  * @returns {Promise}
  */
 export const logoutApi = async () => {
-    const response = await api.post('/auth/logout', {});
+    const response = await api.post('/admin/logout', {});
     return response;
 };
 
