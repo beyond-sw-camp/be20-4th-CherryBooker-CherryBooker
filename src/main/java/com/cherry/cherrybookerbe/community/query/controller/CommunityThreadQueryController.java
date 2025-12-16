@@ -1,12 +1,12 @@
 package com.cherry.cherrybookerbe.community.query.controller;
 
 import com.cherry.cherrybookerbe.common.dto.ApiResponse;
+import com.cherry.cherrybookerbe.common.security.auth.UserPrincipal;
 import com.cherry.cherrybookerbe.community.query.dto.CommunityThreadDetailResponse;
 import com.cherry.cherrybookerbe.community.query.dto.CommunityThreadListResponse;
-import com.cherry.cherrybookerbe.community.query.dto.CommunityThreadSummaryResponse;
 import com.cherry.cherrybookerbe.community.query.service.CommunityThreadQueryService;
-import java.util.List;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -37,5 +37,21 @@ public class CommunityThreadQueryController {
     ) {
         CommunityThreadDetailResponse response = communityThreadQueryService.getThreadDetail(threadId);
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    //내 스레드 조회
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<CommunityThreadListResponse>> getMyThreads(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Integer userId = principal.userId();
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        communityThreadQueryService.getMyThreadList(userId, page, size)
+                )
+        );
     }
 }

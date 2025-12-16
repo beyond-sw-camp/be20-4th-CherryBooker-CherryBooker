@@ -54,15 +54,15 @@ public class SecurityConfig {
                 // 인가 설정
                 // ========================================================
                 .authorizeHttpRequests(auth -> auth
-                        // Kubernetes health check를 위한 설정
                         .requestMatchers("/actuator/health/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // Swagger 문서 접근 허용
+
                         .requestMatchers(
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
+
                         .requestMatchers(
                                 "/", "/error", "/favicon.ico",
                                 "/login/**",
@@ -73,13 +73,19 @@ public class SecurityConfig {
                                 "/auth/**",
                                 "/auth/login/kakao/**"
                         ).permitAll()
+
+                        // 관리자 로그인/초기 진입은 허용
+                        .requestMatchers(HttpMethod.POST, "/admin/login").permitAll()
+
                         // 2) 관리자 전용 API
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
 
 
-                        // ========================================================
+
+                // ========================================================
                 // OAuth2 설정
                 // ========================================================
                 .oauth2Login(oauth2 -> oauth2
