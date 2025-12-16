@@ -74,18 +74,22 @@ OCR 기술을 통해 텍스트가 자동으로 추출·저장되며,
 
 <details> 
 	<summary><b>🔐 로그인 / 인증</b></summary> 
-	<h4>로그인(회원)</h4>
-	<img src="./ad-hell-client/product/gif/userLogin.gif" width="80%"/> 
+	<h4>로그인/로그아웃(회원)</h4>
+	<img src="./product/gif/login_logout.gif" width="80%"/> 
 	<br>
-	<h4>아이디 찾기</h4>
-	<img src="./ad-hell-client/product/gif/FindId.gif" width="80%"/> 
-
-</details> 
+    <h4>로그인/로그아웃(관리자)</h4>
+    <img src="./product/gif/admin_login_logout.gif" width="80%"/> 
+</details>  
 <details> 
 	<summary><b>📚 개인 서재 관리</b></summary>
 	<h4>나의 서재 기능</h4>
 	<img src="./product/gif/mylib.gif" width="80%"//>
+</details> 
 
+<details> 
+	<summary><b> 👤 마이페이지</b></summary> 
+    <img src="./product/gif/마이페이지.gif" width="80%"/> 
+	<br>
 </details> 
 
 <details> 
